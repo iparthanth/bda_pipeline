@@ -1,0 +1,75 @@
+{
+  "description": "SF=1: one incremental daily drop (first future day), then the same drop re-run (no-op) and force re-ingested",
+  "before_drop": {
+    "silver_rows": 27254665,
+    "distinct_ids": 27254665,
+    "gold_cases": 10841722,
+    "gold_rows": 67072,
+    "quarantine_rows": 444710,
+    "as_of": "2025-12-31",
+    "silver_versions": 1
+  },
+  "after_drop": {
+    "silver_rows": 27267759,
+    "distinct_ids": 27267759,
+    "gold_cases": 10845884,
+    "gold_rows": 67072,
+    "quarantine_rows": 444922,
+    "as_of": "2026-01-01",
+    "silver_versions": 2
+  },
+  "after_rerun_and_forced_reingest": {
+    "silver_rows": 27267759,
+    "distinct_ids": 27267759,
+    "gold_cases": 10845884,
+    "gold_rows": 67072,
+    "quarantine_rows": 445134,
+    "as_of": "2026-01-01",
+    "silver_versions": 3
+  },
+  "drop_dag_seconds": 687.5,
+  "drop_dag_tasks": {
+    "env": 0.1,
+    "load_drop": 135.6,
+    "analytics": 498.5,
+    "export": 53.4
+  },
+  "drop_load": {
+    "seconds": 134.9,
+    "stage_seconds": {
+      "bronze": 18.6,
+      "silver": 54.8,
+      "dedup": 12.4,
+      "gold": 37.7
+    },
+    "dq": [
+      {
+        "source": "encounters",
+        "rows_in": 13560,
+        "rows_quarantined": 211,
+        "duplicates_removed": 64
+      },
+      {
+        "source": "stock",
+        "rows_in": 777,
+        "rows_quarantined": 1,
+        "duplicates_removed": 0
+      }
+    ],
+    "files": {
+      "encounters": 1,
+      "stock": 1
+    }
+  },
+  "rerun_status": "nothing new - all files already ingested (idempotent no-op), 18 s",
+  "forced_reingest_load": {
+    "seconds": 124.0,
+    "stage_seconds": {
+      "bronze": 13.7,
+      "silver": 50.4,
+      "dedup": 12.3,
+      "gold": 36.1
+    }
+  },
+  "note": "quarantine rows grew by 212 on the forced re-ingest in this run; fixed afterwards (quarantine rows from the same file checksum are now replaced)"
+}

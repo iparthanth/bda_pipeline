@@ -1,0 +1,207 @@
+{
+  "operating_point": {
+    "method": "cusum",
+    "threshold": 17.0
+  },
+  "recommended_by_rule": {
+    "method": "cusum",
+    "threshold": 17.0,
+    "rule": "max sensitivity s.t. FA/district-year <= 3.0"
+  },
+  "operating_point_metrics": {
+    "method": "cusum",
+    "threshold": 17.0,
+    "variant": "guarded",
+    "sensitivity_local": 0.90625,
+    "n_local": 32,
+    "median_delay_local": 15.0,
+    "sensitivity_nrs_districts": 1.0,
+    "median_delay_nrs": 95.0,
+    "false_alerts_per_district_year": 2.0248234160958902,
+    "false_by_disease": {
+      "dengue": 242,
+      "diarrhoea": 168,
+      "ili": 96,
+      "malaria": 12
+    },
+    "alert_events": 618,
+    "ppv_events": 0.16181229773462782
+  },
+  "eval_period": [
+    "2022-01-01",
+    "2025-12-31"
+  ],
+  "artefacts": [
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "naive",
+      "method": "ears_c1",
+      "threshold": 6.0,
+      "alert_days": 3,
+      "diseases_alerting": [
+        "dengue",
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "guarded",
+      "method": "ears_c1",
+      "threshold": 6.0,
+      "alert_days": 1,
+      "diseases_alerting": [
+        "diarrhoea"
+      ]
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "ears_c1",
+      "threshold": 6.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "guarded",
+      "method": "ears_c1",
+      "threshold": 6.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "naive",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 3,
+      "diseases_alerting": [
+        "dengue",
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "guarded",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 2,
+      "diseases_alerting": [
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "guarded",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "naive",
+      "method": "ears_c3",
+      "threshold": 8.0,
+      "alert_days": 9,
+      "diseases_alerting": [
+        "dengue",
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "guarded",
+      "method": "ears_c3",
+      "threshold": 8.0,
+      "alert_days": 6,
+      "diseases_alerting": [
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "ears_c3",
+      "threshold": 8.0,
+      "alert_days": 2,
+      "diseases_alerting": [
+        "dengue"
+      ]
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "guarded",
+      "method": "ears_c3",
+      "threshold": 8.0,
+      "alert_days": 2,
+      "diseases_alerting": [
+        "dengue"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "naive",
+      "method": "cusum",
+      "threshold": 17.0,
+      "alert_days": 15,
+      "diseases_alerting": [
+        "diarrhoea"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "guarded",
+      "method": "cusum",
+      "threshold": 17.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "cusum",
+      "threshold": 17.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "guarded",
+      "method": "cusum",
+      "threshold": 17.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    }
+  ],
+  "n_outbreak_rows_evaluated": 96
+}

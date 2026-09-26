@@ -1,0 +1,17 @@
+{
+  "scale_factor": 1.0,
+  "seed": 20260101,
+  "start_date": "2021-01-01",
+  "history_end": "2025-12-31",
+  "drop_days": 14,
+  "encounter_rows_history": 28239687,
+  "encounter_rows_drops": 194626,
+  "resubmitted_rows": 558211,
+  "facilities": 786,
+  "stock_rows": 1433752,
+  "outbreaks": 35,
+  "outbreak_rows": 98,
+  "seconds": 59.3,
+  "synthetic": true,
+  "label": "SYNTHETIC DATA - EpiScope teaching case (CSE 4345)"
+}

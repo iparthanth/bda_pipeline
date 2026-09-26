@@ -1,0 +1,124 @@
+[
+  {
+    "level": "L0",
+    "records": 92249,
+    "k_min_before_suppression": 1,
+    "classes": 18868,
+    "records_in_classes_below_k": 22823,
+    "suppressed_share": 0.24740647595095883,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L1",
+    "records": 92249,
+    "k_min_before_suppression": 1,
+    "classes": 8390,
+    "records_in_classes_below_k": 9239,
+    "suppressed_share": 0.10015284718533535,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L2",
+    "records": 92249,
+    "k_min_before_suppression": 1,
+    "classes": 3342,
+    "records_in_classes_below_k": 3744,
+    "suppressed_share": 0.04058580580819304,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L3",
+    "records": 92249,
+    "k_min_before_suppression": 1,
+    "classes": 2066,
+    "records_in_classes_below_k": 2271,
+    "suppressed_share": 0.024618153042309403,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L4",
+    "records": 92249,
+    "k_min_before_suppression": 1,
+    "classes": 871,
+    "records_in_classes_below_k": 717,
+    "suppressed_share": 0.007772441977690815,
+    "k_required": 5,
+    "meets_k_after_suppression": true
+  },
+  {
+    "level": "L4-released",
+    "records": 91532,
+    "k_min_before_suppression": 5,
+    "classes": null,
+    "records_in_classes_below_k": 0,
+    "suppressed_share": 0.0077724419776907805,
+    "k_required": 5,
+    "meets_k_after_suppression": true,
+    "path": "/home/user/work/sf1/exports/research_extract_malaria_L4"
+  },
+  {
+    "level": "L0",
+    "records": 1474793,
+    "k_min_before_suppression": 1,
+    "classes": 105333,
+    "records_in_classes_below_k": 130609,
+    "suppressed_share": 0.08856090312335359,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L1",
+    "records": 1474793,
+    "k_min_before_suppression": 1,
+    "classes": 35150,
+    "records_in_classes_below_k": 31178,
+    "suppressed_share": 0.021140593968102642,
+    "k_required": 5,
+    "meets_k_after_suppression": false
+  },
+  {
+    "level": "L2",
+    "records": 1474793,
+    "k_min_before_suppression": 1,
+    "classes": 5603,
+    "records_in_classes_below_k": 1718,
+    "suppressed_share": 0.0011649092448906388,
+    "k_required": 5,
+    "meets_k_after_suppression": true
+  },
+  {
+    "level": "L3",
+    "records": 1474793,
+    "k_min_before_suppression": 1,
+    "classes": 2871,
+    "records_in_classes_below_k": 457,
+    "suppressed_share": 0.00030987399587603144,
+    "k_required": 5,
+    "meets_k_after_suppression": true
+  },
+  {
+    "level": "L4",
+    "records": 1474793,
+    "k_min_before_suppression": 2,
+    "classes": 960,
+    "records_in_classes_below_k": 9,
+    "suppressed_share": 6.102551341103464e-06,
+    "k_required": 5,
+    "meets_k_after_suppression": true
+  },
+  {
+    "level": "L2-released",
+    "records": 1473075,
+    "k_min_before_suppression": 5,
+    "classes": null,
+    "records_in_classes_below_k": 0,
+    "suppressed_share": 0.001164909244890655,
+    "k_required": 5,
+    "meets_k_after_suppression": true,
+    "path": "/home/user/work/sf1/exports/research_extract_dengue_L2"
+  }
+]

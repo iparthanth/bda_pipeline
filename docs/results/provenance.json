@@ -1,0 +1,25 @@
+{
+  "S1_boundaries": {
+    "status": "real",
+    "file": "/home/user/work/sf1/landing/public/boundaries/bgd_admin2.geojson",
+    "url": "https://raw.githubusercontent.com/meetshaks/bangladesh-administrative-boundaries-json/7dbe1a69296f4f296e0c973318fb8782806a6a09/bgd_admin2.geojson",
+    "note": "cached"
+  },
+  "S2_population": {
+    "status": "synthetic_fallback",
+    "file": "/home/user/work/sf1/landing/public/population/SYNTHETIC_FALLBACK_population.csv",
+    "note": "HDX unreachable - synthetic denominators; re-run with internet for BBS 2022 data"
+  },
+  "S3_weather": {
+    "status": "synthetic_fallback",
+    "file": "/home/user/work/sf1/landing/public/weather/SYNTHETIC_FALLBACK_weather.csv",
+    "note": "Open-Meteo unreachable (0/64 districts) - synthetic monsoon climatology"
+  },
+  "S7_opendengue": {
+    "status": "real",
+    "file": "/home/user/work/sf1/landing/public/opendengue/National_extract_SEARO_V1_3.zip",
+    "url": "https://raw.githubusercontent.com/OpenDengue/master-repo/f2232b8f1c82bfc38006d8ecebd93677b9ac75d0/assets/National_extract_SEARO_V1_3.zip",
+    "licence": "CC BY 4.0"
+  },
+  "generated_at": "2026-09-26T19:16:27+00:00"
+}

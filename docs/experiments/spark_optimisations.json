@@ -1,0 +1,83 @@
+{
+  "app_id": "local-1790452173249",
+  "results": [
+    {
+      "experiment": "broadcast_registry_join",
+      "before": {
+        "label": "broadcast: OFF (sort-merge join)",
+        "seconds_median": 7.04,
+        "seconds_all": [
+          17.63,
+          7.04,
+          6.28
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[adm2_pcode#119], functions=[count(1)], output=[adm2_pcode#119, n#2489L])\n   +- Exchange hashpartitioning(adm2_pcode#119, 32), ENSURE_REQUIREMENTS, [plan_id=1302]\n      +- HashAggregate(keys=[adm2_pcode#119], functions=[partial_count(1)], output=[adm2_pcode#119, count#2495L])\n         +- Project [adm2_pcode#119]\n            +- SortMergeJoin [facility_id#50], [facility_id#115], LeftOuter\n               :- Sort [facility_id#50 ASC NULLS FIRST], false, 0\n               :  +- Exchange hashpartitioning(facility_id#50, 32), ENSURE_REQUIREMENTS, [plan_id=1294]\n               :     +- Project [facility_id#50]\n               :        +- FileScan parquet [facility_id#50,_batch_id#63] Batched: true, DataFilters: [], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/bronze/encounters_raw], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<facility_id:string>\n               +- Sort [facility_id#115 ASC NULLS FIRST], false, 0\n                  +- Exchange hashpartitioning(facility_id#115, 32), ENSURE_REQUIREMENTS, [plan_id=1295]\n                     +- Filter isnotnull(facility_id#115)\n                        +- FileScan parquet [facility_id#115,adm2_pcode#119] Batched: true, DataFilters: [isnotnull(facility_id#115)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/silver/facilities], PartitionFilters: [], PushedFilters: [IsNotNull(facility_id)], ReadSchema: struct<facility_id:string,adm2_pcode:string>"
+      },
+      "after": {
+        "label": "broadcast: ON (broadcast hash join)",
+        "seconds_median": 4.23,
+        "seconds_all": [
+          4.23,
+          4.03,
+          4.41
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[adm2_pcode#119], functions=[count(1)], output=[adm2_pcode#119, n#3629L])\n   +- Exchange hashpartitioning(adm2_pcode#119, 32), ENSURE_REQUIREMENTS, [plan_id=2091]\n      +- HashAggregate(keys=[adm2_pcode#119], functions=[partial_count(1)], output=[adm2_pcode#119, count#3635L])\n         +- Project [adm2_pcode#119]\n            +- BroadcastHashJoin [facility_id#50], [facility_id#115], LeftOuter, BuildRight, false\n               :- Project [facility_id#50]\n               :  +- FileScan parquet [facility_id#50,_batch_id#63] Batched: true, DataFilters: [], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/bronze/encounters_raw], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<facility_id:string>\n               +- BroadcastExchange HashedRelationBroadcastMode(List(input[0, string, false]),false), [plan_id=2086]\n                  +- Filter isnotnull(facility_id#115)\n                     +- FileScan parquet [facility_id#115,adm2_pcode#119] Batched: true, DataFilters: [isnotnull(facility_id#115)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/silver/facilities], PartitionFilters: [], PushedFilters: [IsNotNull(facility_id)], ReadSchema: struct<facility_id:string,adm2_pcode:string>"
+      },
+      "speedup": 1.66,
+      "check_before_smj": true,
+      "check_after_bhj": true
+    },
+    {
+      "experiment": "partition_pruning",
+      "before": {
+        "label": "pruning: unpartitioned table (full scan)",
+        "seconds_median": 0.5,
+        "seconds_all": [
+          1.6,
+          0.5,
+          0.45
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[week_start#5307], functions=[count(1)], output=[week_start#5307, cases#5366L])\n   +- Exchange hashpartitioning(week_start#5307, 32), ENSURE_REQUIREMENTS, [plan_id=2731]\n      +- HashAggregate(keys=[week_start#5307], functions=[partial_count(1)], output=[week_start#5307, count#5372L])\n         +- Project [week_start#5307]\n            +- Filter (((((isnotnull(epi_year#5308) AND isnotnull(adm1_pcode#5297)) AND isnotnull(disease_group#5303)) AND (epi_year#5308 = 2025)) AND (adm1_pcode#5297 = BD20)) AND (disease_group#5303 = dengue))\n               +- FileScan parquet [adm1_pcode#5297,disease_group#5303,week_start#5307,epi_year#5308] Batched: true, DataFilters: [isnotnull(epi_year#5308), isnotnull(adm1_pcode#5297), isnotnull(disease_group#5303), (epi_year#5..., Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/experiments/encounters_unpartitioned], PartitionFilters: [], PushedFilters: [IsNotNull(epi_year), IsNotNull(adm1_pcode), IsNotNull(disease_group), EqualTo(epi_year,2025), Eq..., ReadSchema: struct<adm1_pcode:string,disease_group:string,week_start:date,epi_year:int>"
+      },
+      "after": {
+        "label": "pruning: partitioned by epi_year, adm1_pcode",
+        "seconds_median": 0.46,
+        "seconds_all": [
+          0.55,
+          0.46,
+          0.44
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[week_start#6028], functions=[count(1)], output=[week_start#6028, cases#6087L])\n   +- Exchange hashpartitioning(week_start#6028, 32), ENSURE_REQUIREMENTS, [plan_id=3040]\n      +- HashAggregate(keys=[week_start#6028], functions=[partial_count(1)], output=[week_start#6028, count#6093L])\n         +- Project [week_start#6028]\n            +- Filter (isnotnull(disease_group#6024) AND (disease_group#6024 = dengue))\n               +- FileScan parquet [disease_group#6024,week_start#6028,epi_year#6029,adm1_pcode#6018] Batched: true, DataFilters: [isnotnull(disease_group#6024), (disease_group#6024 = dengue)], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/silver/encounters], PartitionFilters: [isnotnull(epi_year#6029), isnotnull(adm1_pcode#6018), (epi_year#6029 = 2025), (adm1_pcode#6018 =..., PushedFilters: [IsNotNull(disease_group), EqualTo(disease_group,dengue)], ReadSchema: struct<disease_group:string,week_start:date>"
+      },
+      "files_scanned_before": 14,
+      "files_scanned_after": 1,
+      "speedup": 1.09
+    },
+    {
+      "experiment": "columnar_storage",
+      "before": {
+        "label": "columnar: raw CSV landing files",
+        "seconds_median": 13.4,
+        "seconds_all": [
+          17.48,
+          13.4,
+          13.05
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[facility_id#7717, _groupingexpression#7763], functions=[count(1)], output=[facility_id#7717, icd#7737, n#7750L])\n   +- Exchange hashpartitioning(facility_id#7717, _groupingexpression#7763, 32), ENSURE_REQUIREMENTS, [plan_id=3355]\n      +- HashAggregate(keys=[facility_id#7717, _groupingexpression#7763], functions=[partial_count(1)], output=[facility_id#7717, _groupingexpression#7763, count#7760L])\n         +- Project [facility_id#7717, substring(icd10_code#7722, 1, 3) AS _groupingexpression#7763]\n            +- FileScan csv [facility_id#7717,icd10_code#7722] Batched: false, DataFilters: [], Format: CSV, Location: InMemoryFileIndex(1 paths)[file:/home/user/work/sf1/landing/encounters], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<facility_id:string,icd10_code:string>"
+      },
+      "after": {
+        "label": "columnar: bronze Delta/Parquet (2 of 17 columns read)",
+        "seconds_median": 1.95,
+        "seconds_all": [
+          2.23,
+          1.95,
+          1.88
+        ],
+        "plan_excerpt": "AdaptiveSparkPlan isFinalPlan=false\n+- HashAggregate(keys=[facility_id#8320, _groupingexpression#8488], functions=[count(1)], output=[facility_id#8320, icd#8352, n#8371L])\n   +- Exchange hashpartitioning(facility_id#8320, _groupingexpression#8488, 32), ENSURE_REQUIREMENTS, [plan_id=3730]\n      +- HashAggregate(keys=[facility_id#8320, _groupingexpression#8488], functions=[partial_count(1)], output=[facility_id#8320, _groupingexpression#8488, count#8381L])\n         +- Project [facility_id#8320, substring(icd10_code#8325, 1, 3) AS _groupingexpression#8488]\n            +- FileScan parquet [facility_id#8320,icd10_code#8325,_batch_id#8333] Batched: true, DataFilters: [], Format: Parquet, Location: PreparedDeltaFileIndex(1 paths)[file:/home/user/work/sf1/lake/bronze/encounters_raw], PartitionFilters: [], PushedFilters: [], ReadSchema: struct<facility_id:string,icd10_code:string>"
+      },
+      "csv_bytes": 2936785500,
+      "parquet_bytes": 325557026,
+      "speedup": 6.87
+    }
+  ]
+}

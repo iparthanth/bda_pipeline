@@ -1,0 +1,45 @@
+{
+  "batch_id": "B20260926T191747-adb3b2c6",
+  "source": "/home/user/work/sf1/landing",
+  "files": {
+    "encounters": 320,
+    "facilities": 1,
+    "stock": 1826,
+    "public_boundaries": 1,
+    "public_population": 1,
+    "public_weather": 1,
+    "public_opendengue": 1
+  },
+  "skipped_files": 0,
+  "first_load": true,
+  "episode_links": 123597,
+  "as_of": "2025-12-31",
+  "status": "loaded",
+  "seconds": 751.3,
+  "stage_seconds": {
+    "bronze": 122.2,
+    "silver": 516.7,
+    "dedup": 24.8,
+    "gold": 78.9
+  },
+  "dq": [
+    {
+      "source": "facilities",
+      "rows_in": 788,
+      "rows_quarantined": 2,
+      "duplicates_removed": 0
+    },
+    {
+      "source": "encounters",
+      "rows_in": 28239687,
+      "rows_quarantined": 440423,
+      "duplicates_removed": 544599
+    },
+    {
+      "source": "stock",
+      "rows_in": 1422840,
+      "rows_quarantined": 4285,
+      "duplicates_removed": 0
+    }
+  ]
+}

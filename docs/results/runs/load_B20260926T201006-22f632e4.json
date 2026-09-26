@@ -1,0 +1,34 @@
+{
+  "batch_id": "B20260926T201006-22f632e4",
+  "source": "/home/user/work/sf1/drops",
+  "files": {
+    "encounters": 13,
+    "stock": 13
+  },
+  "skipped_files": 2,
+  "first_load": false,
+  "episode_links": 124256,
+  "as_of": "2026-01-14",
+  "status": "loaded",
+  "seconds": 144.8,
+  "stage_seconds": {
+    "bronze": 18.9,
+    "silver": 59.8,
+    "dedup": 16.4,
+    "gold": 38.1
+  },
+  "dq": [
+    {
+      "source": "encounters",
+      "rows_in": 181066,
+      "rows_quarantined": 2852,
+      "duplicates_removed": 3023
+    },
+    {
+      "source": "stock",
+      "rows_in": 10135,
+      "rows_quarantined": 41,
+      "duplicates_removed": 0
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+{"batch_id": "S20260926T202332-e0", "file": "stream_1.csv", "arrived": 1790454188.612137, "alerts_refreshed": 1790454317.4712253, "latency_seconds": 128.9, "processing_seconds": 104.8, "rows": 4000}
+{"batch_id": "S20260926T202530-e1", "file": "stream_2.csv", "arrived": 1790454324.892134, "alerts_refreshed": 1790454403.0914211, "latency_seconds": 78.2, "processing_seconds": 72.7, "rows": 4000}
+{"batch_id": "S20260926T202700-e2", "file": "stream_3.csv", "arrived": 1790454405.4401321, "alerts_refreshed": 1790454492.1629393, "latency_seconds": 86.7, "processing_seconds": 71.8, "rows": 4000}

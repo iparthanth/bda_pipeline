@@ -1,0 +1,86 @@
+% Appendix A - two-page policy brief for the Director (non-technical: no code, no jargon)
+\section{Policy Brief for the Director, Disease Control \& Preparedness Unit}
+\begin{center}\large\textbf{Seeing outbreaks sooner and sending supplies where they save most lives}\\[2pt]
+\normalsize EpiScope prototype -- summary for decision-makers\end{center}
+
+\noindent\fbox{\parbox{0.97\textwidth}{\textbf{Important:} this prototype was built and tested on realistic
+\emph{simulated} patient records for all 64 districts (2021--2025), because real patient data cannot be used
+for a student project. The findings below show what the system can do; the numbers must be re-checked on the
+Ministry's own data before any operational decision.}}
+
+\subsection*{1. The current situation}
+Information about dengue, diarrhoea and cholera, influenza-like illness and malaria reaches the Ministry late,
+in many formats, and is mostly analysed after the fact. As a result, saline, test kits and teams often reach a
+district after its hospitals are already full. EpiScope brings the routine reports from hospitals and health
+complexes, the weather record, population figures and district stock levels together every day and turns them
+into four things officials can act on: \textbf{early warnings}, \textbf{forecasts for the next four weeks},
+\textbf{a recommended distribution of supplies and response teams}, and \textbf{a calendar for the year ahead}.
+
+\subsection*{2. Top three recommendations}
+\begin{enumerate}
+\item \textbf{Adopt a weekly ``warning review'' based on the ranked warning list.} In our test the warning system
+recognised \SensLocal{} of the simulated local outbreaks, typically about \MedDelayLocal{} days after they began,
+while producing roughly \FAperDY{} unnecessary warnings per district per year across the four diseases. It also
+ignored a hospital that suddenly sent three weeks of late reports at once -- a situation that fools simpler systems.
+\emph{Expected impact:} response teams can be sent days to weeks earlier than with monthly spreadsheet reviews,
+with a manageable number of false alarms. Each warning should be confirmed by a phone call to the district
+before a team is sent.
+\item \textbf{Distribute supplies with the recommended plan, guaranteeing every district a small minimum
+share} (at least one tenth of its share by population of every shipment). With a budget of 60\% of what would be needed to fill every district's shortfall, the
+recommended plan fills \OptGapCov{}\% of the districts' combined shortfall, against \BaseGapCov{}\% if supplies
+are shared by population alone, and guarantees every district at least a share of each shipment. This guarantee costs a little efficiency
+(about \RecEffLoss{}\% more unmet need than a plan that ignores fairness) but means no district is left with
+nothing. \emph{Expected impact:} more saline and test kits where patients will actually be, without abandoning
+low-risk districts.
+\item \textbf{Follow the preparedness calendar: start dengue prevention in March and stock up by April.} Every
+year dengue cases in all divisions begin to rise in May, peak in August and fall in November; diarrhoea peaks in
+April--May. The calendar tells each division when to begin larval control (about eight weeks before the rise),
+when supplies must be in place (four weeks before) and when to add hospital staff (two weeks before the peak).
+\emph{Expected impact:} the heaviest weeks of the season are met with stock already in place.
+\end{enumerate}
+
+\subsection*{3. How to read the dashboard}
+\begin{itemize}
+\item \textbf{Map:} darker blue = more cases per 100{,}000 people in the chosen weeks. A red triangle marks a
+district with an active warning; an orange diamond means ``check the reporting first'' (for example, a new
+hospital has just joined the system). Striped areas include small numbers that are hidden for privacy.
+\item \textbf{Weekly chart:} the solid line is what has been reported; the dashed end is our estimate for the
+weeks still being reported; the shaded fan is the forecast -- the darkest band is where the true number is
+most likely to fall, the lightest covers 9 out of 10 outcomes. The red dotted line is the warning threshold.
+\item \textbf{Warning list:} districts at the top need attention first. ``Days in alert'' shows how long the
+warning has lasted.
+\item \textbf{Supplies chart and sliders:} compare expected need (orange), current stock (black diamond) and the
+recommended shipment (blue). The sliders let you ask ``what if the budget were smaller?'' or ``what if we
+guarantee every district a larger minimum share?'' and see the effect immediately.
+\item Every panel shows the date of its latest data. A district officer sees their own district in full and the
+rest of the country only in summary.
+\end{itemize}
+
+\subsection*{4. Confidence and limitations}
+\begin{itemize}
+\item Forecasts one week ahead were much closer to what happened than simply assuming ``same as this week last
+year'': their error score was only \GlmRelWISOne{} times that of the simple method, and the stated ranges
+contained the real number about as often as promised (8 times in 10). Forecasts become less certain further ahead, and the
+fans in the chart show this honestly. Four-week forecasts should guide preparation, not exact orders.
+\item Slow-building outbreaks are harder to spot than sudden ones; unusual weather (floods, an early monsoon)
+also causes genuine rises that the system will flag and that officials must interpret.
+\item The results depend on hospitals reporting regularly. The system detects facilities that stop reporting,
+but it cannot see patients who never reach a facility.
+\item Supply needs are converted from cases using standard assumptions (for example, six bags of saline per
+admitted dengue patient); these should be confirmed with clinicians and stores staff.
+\item Some public inputs (weather, population) must be refreshed from the official sources when the system is
+installed at the Ministry.
+\end{itemize}
+
+\subsection*{5. Data-protection assurance}
+\begin{itemize}
+\item Names and national ID numbers never leave the secure first storage area: they are replaced by an
+irreversible code made with a secret key that is kept outside the software.
+\item Exact ages are reduced to age groups. The dashboard and every export show only totals per district and
+week; any count between 1 and 4 is shown as ``fewer than 5'', and a second number is hidden when totals would
+otherwise reveal it.
+\item Access is by personal key, each user sees only what their role requires, and every access is logged.
+\item Any record-level file shared with researchers is checked so that each combination of place, time, age group
+and sex covers at least five people; for public releases we recommend adding a small amount of statistical noise
+(differential privacy).
+\end{itemize}

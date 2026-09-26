@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-09-26T20:32:24+00:00",
+  "lake_root": "s3a://episcope/lake",
+  "endpoint": "http://localhost:9000",
+  "filesystem": "org.apache.hadoop.fs.s3a.S3AFileSystem",
+  "objects": 317,
+  "bytes": 26583268,
+  "table_rows": {
+    "bronze.encounters_raw": 84728,
+    "silver.encounters": 82229,
+    "silver.quarantine": 5285,
+    "gold.weekly_counts": 67072,
+    "gold.daily_signal": 467456,
+    "gold.dq_report": 3
+  },
+  "catalog_location": "s3a://episcope/lake/gold/weekly_counts",
+  "server": "moto_server 5.0.16 (S3-compatible API) on localhost:9000 - Docker/MinIO is not available in the build container; docker-compose.yml provides MinIO for real deployments",
+  "run": "SF=0.003 generator + python -m pipeline.run_load with EPISCOPE__PATHS__LAKE_ROOT=s3a://episcope/lake (hadoop-aws 3.3.4)"
+}

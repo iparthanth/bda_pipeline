@@ -1,0 +1,482 @@
+{
+  "hardware": {
+    "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+    "python": "3.11.15",
+    "cpus": 4,
+    "mem_gb": 16.5,
+    "spark_master": "local[*]",
+    "driver_memory": "6g"
+  },
+  "rows": [
+    {
+      "sf": 0.25,
+      "encounter_rows": 7070851,
+      "total_seconds": 742.9,
+      "env": 0.1,
+      "fetch_public": 1.2,
+      "generate": 21.0,
+      "load_history": 296.7,
+      "analytics": 374.2,
+      "export": 49.7,
+      "load_bronze": 66.3,
+      "load_silver": 163.3,
+      "load_dedup": 9.0,
+      "load_gold": 48.1,
+      "landing_mb": 947.8,
+      "bronze_mb": 111.7,
+      "silver_mb": 341.5,
+      "gold_mb": 42.1,
+      "serving_mb": 1.7
+    },
+    {
+      "sf": 0.5,
+      "encounter_rows": 14140313,
+      "total_seconds": 950.0,
+      "env": 0.1,
+      "fetch_public": 1.3,
+      "generate": 34.0,
+      "load_history": 456.1,
+      "analytics": 407.3,
+      "export": 51.3,
+      "load_bronze": 86.3,
+      "load_silver": 293.3,
+      "load_dedup": 12.8,
+      "load_gold": 54.3,
+      "landing_mb": 1683.4,
+      "bronze_mb": 194.4,
+      "silver_mb": 670.2,
+      "gold_mb": 45.0,
+      "serving_mb": 1.7
+    },
+    {
+      "sf": 1.0,
+      "encounter_rows": 28239687,
+      "total_seconds": 1352.6,
+      "env": 0.1,
+      "fetch_public": 1.2,
+      "generate": 60.1,
+      "load_history": 752.1,
+      "analytics": 485.3,
+      "export": 53.8,
+      "load_bronze": 122.2,
+      "load_silver": 516.7,
+      "load_dedup": 24.8,
+      "load_gold": 78.9,
+      "landing_mb": 3150.2,
+      "bronze_mb": 359.4,
+      "silver_mb": 2079.8,
+      "gold_mb": 255.1,
+      "serving_mb": 1.8
+    }
+  ],
+  "runs": [
+    {
+      "sf": 0.25,
+      "dag": {
+        "dag": "all",
+        "started": "20260926T203239",
+        "scale_factor": 0.25,
+        "hardware": {
+          "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+          "python": "3.11.15",
+          "cpus": 4,
+          "mem_gb": 16.5,
+          "spark_master": "local[*]",
+          "driver_memory": "6g"
+        },
+        "tasks": [
+          {
+            "task": "env",
+            "cmd": "-m orchestration.init_env",
+            "attempts": 1,
+            "start": "2026-09-26T20:32:39",
+            "end": "2026-09-26T20:32:39",
+            "seconds": 0.1,
+            "returncode": 0
+          },
+          {
+            "task": "fetch_public",
+            "cmd": "-m generator.fetch_public --offline",
+            "attempts": 1,
+            "start": "2026-09-26T20:32:39",
+            "end": "2026-09-26T20:32:40",
+            "seconds": 1.2,
+            "returncode": 0
+          },
+          {
+            "task": "generate",
+            "cmd": "-m generator.generate --sf 0.25",
+            "attempts": 1,
+            "start": "2026-09-26T20:32:40",
+            "end": "2026-09-26T20:33:01",
+            "seconds": 21.0,
+            "returncode": 0
+          },
+          {
+            "task": "load_history",
+            "cmd": "-m pipeline.run_load",
+            "attempts": 1,
+            "start": "2026-09-26T20:33:01",
+            "end": "2026-09-26T20:37:58",
+            "seconds": 296.7,
+            "returncode": 0
+          },
+          {
+            "task": "analytics",
+            "cmd": "-m analytics.run_analytics",
+            "attempts": 1,
+            "start": "2026-09-26T20:37:58",
+            "end": "2026-09-26T20:44:12",
+            "seconds": 374.2,
+            "returncode": 0
+          },
+          {
+            "task": "export",
+            "cmd": "-m serving.export",
+            "attempts": 1,
+            "start": "2026-09-26T20:44:12",
+            "end": "2026-09-26T20:45:02",
+            "seconds": 49.7,
+            "returncode": 0
+          }
+        ],
+        "seconds": 742.9,
+        "status": "success"
+      },
+      "load": {
+        "batch_id": "B20260926T203314-a1f3cff3",
+        "source": "/home/user/work/scale/sf0.25/landing",
+        "files": {
+          "encounters": 320,
+          "facilities": 1,
+          "stock": 1826,
+          "public_boundaries": 1,
+          "public_population": 1,
+          "public_weather": 1,
+          "public_opendengue": 1
+        },
+        "skipped_files": 0,
+        "first_load": true,
+        "episode_links": 30776,
+        "as_of": "2025-12-31",
+        "status": "loaded",
+        "seconds": 296.0,
+        "stage_seconds": {
+          "bronze": 66.3,
+          "silver": 163.3,
+          "dedup": 9.0,
+          "gold": 48.1
+        },
+        "dq": [
+          {
+            "source": "facilities",
+            "rows_in": 788,
+            "rows_quarantined": 2,
+            "duplicates_removed": 0
+          },
+          {
+            "source": "encounters",
+            "rows_in": 7070851,
+            "rows_quarantined": 110188,
+            "duplicates_removed": 136298
+          },
+          {
+            "source": "stock",
+            "rows_in": 1422840,
+            "rows_quarantined": 4285,
+            "duplicates_removed": 0
+          }
+        ]
+      },
+      "generator": {
+        "scale_factor": 0.25,
+        "seed": 20260101,
+        "start_date": "2021-01-01",
+        "history_end": "2025-12-31",
+        "drop_days": 14,
+        "encounter_rows_history": 7070851,
+        "encounter_rows_drops": 49002,
+        "resubmitted_rows": 139638,
+        "facilities": 786,
+        "stock_rows": 1433752,
+        "outbreaks": 35,
+        "outbreak_rows": 98,
+        "seconds": 20.3,
+        "synthetic": true,
+        "label": "SYNTHETIC DATA - EpiScope teaching case (CSE 4345)"
+      }
+    },
+    {
+      "sf": 0.5,
+      "dag": {
+        "dag": "all",
+        "started": "20260926T204502",
+        "scale_factor": 0.5,
+        "hardware": {
+          "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+          "python": "3.11.15",
+          "cpus": 4,
+          "mem_gb": 16.5,
+          "spark_master": "local[*]",
+          "driver_memory": "6g"
+        },
+        "tasks": [
+          {
+            "task": "env",
+            "cmd": "-m orchestration.init_env",
+            "attempts": 1,
+            "start": "2026-09-26T20:45:02",
+            "end": "2026-09-26T20:45:02",
+            "seconds": 0.1,
+            "returncode": 0
+          },
+          {
+            "task": "fetch_public",
+            "cmd": "-m generator.fetch_public --offline",
+            "attempts": 1,
+            "start": "2026-09-26T20:45:02",
+            "end": "2026-09-26T20:45:03",
+            "seconds": 1.3,
+            "returncode": 0
+          },
+          {
+            "task": "generate",
+            "cmd": "-m generator.generate --sf 0.5",
+            "attempts": 1,
+            "start": "2026-09-26T20:45:03",
+            "end": "2026-09-26T20:45:37",
+            "seconds": 34.0,
+            "returncode": 0
+          },
+          {
+            "task": "load_history",
+            "cmd": "-m pipeline.run_load",
+            "attempts": 1,
+            "start": "2026-09-26T20:45:37",
+            "end": "2026-09-26T20:53:14",
+            "seconds": 456.1,
+            "returncode": 0
+          },
+          {
+            "task": "analytics",
+            "cmd": "-m analytics.run_analytics",
+            "attempts": 1,
+            "start": "2026-09-26T20:53:14",
+            "end": "2026-09-26T21:00:01",
+            "seconds": 407.3,
+            "returncode": 0
+          },
+          {
+            "task": "export",
+            "cmd": "-m serving.export",
+            "attempts": 1,
+            "start": "2026-09-26T21:00:01",
+            "end": "2026-09-26T21:00:52",
+            "seconds": 51.3,
+            "returncode": 0
+          }
+        ],
+        "seconds": 950.0,
+        "status": "success"
+      },
+      "load": {
+        "batch_id": "B20260926T204552-6f251884",
+        "source": "/home/user/work/scale/sf0.5/landing",
+        "files": {
+          "encounters": 320,
+          "facilities": 1,
+          "stock": 1826,
+          "public_boundaries": 1,
+          "public_population": 1,
+          "public_weather": 1,
+          "public_opendengue": 1
+        },
+        "skipped_files": 0,
+        "first_load": true,
+        "episode_links": 61693,
+        "as_of": "2025-12-31",
+        "status": "loaded",
+        "seconds": 455.5,
+        "stage_seconds": {
+          "bronze": 86.3,
+          "silver": 293.3,
+          "dedup": 12.8,
+          "gold": 54.3
+        },
+        "dq": [
+          {
+            "source": "facilities",
+            "rows_in": 788,
+            "rows_quarantined": 2,
+            "duplicates_removed": 0
+          },
+          {
+            "source": "encounters",
+            "rows_in": 14140313,
+            "rows_quarantined": 220494,
+            "duplicates_removed": 272644
+          },
+          {
+            "source": "stock",
+            "rows_in": 1422840,
+            "rows_quarantined": 4285,
+            "duplicates_removed": 0
+          }
+        ]
+      },
+      "generator": {
+        "scale_factor": 0.5,
+        "seed": 20260101,
+        "start_date": "2021-01-01",
+        "history_end": "2025-12-31",
+        "drop_days": 14,
+        "encounter_rows_history": 14140313,
+        "encounter_rows_drops": 97617,
+        "resubmitted_rows": 279429,
+        "facilities": 786,
+        "stock_rows": 1433752,
+        "outbreaks": 35,
+        "outbreak_rows": 98,
+        "seconds": 33.3,
+        "synthetic": true,
+        "label": "SYNTHETIC DATA - EpiScope teaching case (CSE 4345)"
+      }
+    },
+    {
+      "sf": 1.0,
+      "dag": {
+        "dag": "all",
+        "started": "20260926T191625",
+        "scale_factor": 1.0,
+        "hardware": {
+          "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
+          "python": "3.11.15",
+          "cpus": 4,
+          "mem_gb": 16.5,
+          "spark_master": "local[*]",
+          "driver_memory": "6g"
+        },
+        "tasks": [
+          {
+            "task": "env",
+            "cmd": "-m orchestration.init_env",
+            "attempts": 1,
+            "start": "2026-09-26T19:16:26",
+            "end": "2026-09-26T19:16:26",
+            "seconds": 0.1,
+            "returncode": 0
+          },
+          {
+            "task": "fetch_public",
+            "cmd": "-m generator.fetch_public --offline",
+            "attempts": 1,
+            "start": "2026-09-26T19:16:26",
+            "end": "2026-09-26T19:16:27",
+            "seconds": 1.2,
+            "returncode": 0
+          },
+          {
+            "task": "generate",
+            "cmd": "-m generator.generate --sf 1.0",
+            "attempts": 1,
+            "start": "2026-09-26T19:16:27",
+            "end": "2026-09-26T19:17:27",
+            "seconds": 60.1,
+            "returncode": 0
+          },
+          {
+            "task": "load_history",
+            "cmd": "-m pipeline.run_load",
+            "attempts": 1,
+            "start": "2026-09-26T19:17:27",
+            "end": "2026-09-26T19:29:59",
+            "seconds": 752.1,
+            "returncode": 0
+          },
+          {
+            "task": "analytics",
+            "cmd": "-m analytics.run_analytics",
+            "attempts": 1,
+            "start": "2026-09-26T19:29:59",
+            "end": "2026-09-26T19:38:04",
+            "seconds": 485.3,
+            "returncode": 0
+          },
+          {
+            "task": "export",
+            "cmd": "-m serving.export",
+            "attempts": 1,
+            "start": "2026-09-26T19:38:04",
+            "end": "2026-09-26T19:38:58",
+            "seconds": 53.8,
+            "returncode": 0
+          }
+        ],
+        "seconds": 1352.6,
+        "status": "success"
+      },
+      "load": {
+        "batch_id": "B20260926T191747-adb3b2c6",
+        "source": "/home/user/work/sf1/landing",
+        "files": {
+          "encounters": 320,
+          "facilities": 1,
+          "stock": 1826,
+          "public_boundaries": 1,
+          "public_population": 1,
+          "public_weather": 1,
+          "public_opendengue": 1
+        },
+        "skipped_files": 0,
+        "first_load": true,
+        "episode_links": 123597,
+        "as_of": "2025-12-31",
+        "status": "loaded",
+        "seconds": 751.3,
+        "stage_seconds": {
+          "bronze": 122.2,
+          "silver": 516.7,
+          "dedup": 24.8,
+          "gold": 78.9
+        },
+        "dq": [
+          {
+            "source": "facilities",
+            "rows_in": 788,
+            "rows_quarantined": 2,
+            "duplicates_removed": 0
+          },
+          {
+            "source": "encounters",
+            "rows_in": 28239687,
+            "rows_quarantined": 440423,
+            "duplicates_removed": 544599
+          },
+          {
+            "source": "stock",
+            "rows_in": 1422840,
+            "rows_quarantined": 4285,
+            "duplicates_removed": 0
+          }
+        ]
+      },
+      "generator": {
+        "scale_factor": 1.0,
+        "seed": 20260101,
+        "start_date": "2021-01-01",
+        "history_end": "2025-12-31",
+        "drop_days": 14,
+        "encounter_rows_history": 28239687,
+        "encounter_rows_drops": 194626,
+        "resubmitted_rows": 558211,
+        "facilities": 786,
+        "stock_rows": 1433752,
+        "outbreaks": 35,
+        "outbreak_rows": 98,
+        "seconds": 59.3,
+        "synthetic": true,
+        "label": "SYNTHETIC DATA - EpiScope teaching case (CSE 4345)"
+      }
+    }
+  ]
+}

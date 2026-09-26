@@ -1,0 +1,84 @@
+{
+  "description": "make drop DROP=<folder with all 14 generated daily drops>: the day already loaded is skipped by checksum, the other 13 are ingested; same schema, contains two unannounced outbreaks (DR01, DR02) and quality defects",
+  "days": 13,
+  "files": {
+    "encounters": 13,
+    "stock": 13
+  },
+  "skipped_files": 2,
+  "new_rows": 174804,
+  "quarantined": 2852,
+  "duplicates_removed": 3023,
+  "load_seconds": 144.8,
+  "dag_seconds": 686.1,
+  "dag_tasks": {
+    "env": 0.1,
+    "load_drop": 145.4,
+    "analytics": 490.5,
+    "export": 50.1
+  },
+  "before": {
+    "silver_rows": 27267759,
+    "distinct_ids": 27267759,
+    "gold_cases": 10845884,
+    "gold_rows": 67072,
+    "quarantine_rows": 445134,
+    "as_of": "2026-01-01",
+    "silver_versions": 3
+  },
+  "after": {
+    "silver_rows": 27442563,
+    "distinct_ids": 27442563,
+    "gold_cases": 10906325,
+    "gold_rows": 67584,
+    "quarantine_rows": 448027,
+    "as_of": "2026-01-14",
+    "silver_versions": 4
+  },
+  "as_of_after": "2026-01-14",
+  "top_alerts_after": [
+    {
+      "adm2_pcode": "BD4561",
+      "disease_group": "diarrhoea",
+      "status": "alert",
+      "statistic": 37.5,
+      "days_in_alert": 11
+    },
+    {
+      "adm2_pcode": "BD5081",
+      "disease_group": "ili",
+      "status": "alert",
+      "statistic": 34.97,
+      "days_in_alert": 3
+    },
+    {
+      "adm2_pcode": "BD1009",
+      "disease_group": "diarrhoea",
+      "status": "watch",
+      "statistic": 13.14,
+      "days_in_alert": 0
+    },
+    {
+      "adm2_pcode": "BD5549",
+      "disease_group": "ili",
+      "status": "watch",
+      "statistic": 11.84,
+      "days_in_alert": 0
+    }
+  ],
+  "new_alert_series": 2,
+  "injected_in_drop_window": [
+    {
+      "outbreak_id": "DR01",
+      "adm2_pcode": "BD4561",
+      "disease_group": "diarrhoea",
+      "start": "2025-12-26"
+    },
+    {
+      "outbreak_id": "DR02",
+      "adm2_pcode": "BD5081",
+      "disease_group": "ili",
+      "start": "2026-01-02"
+    }
+  ]
+}
