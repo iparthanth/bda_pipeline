@@ -1,0 +1,128 @@
+# EpiScope central configuration.
+# Every stage reads this file; values can be overridden with environment
+# variables of the form EPISCOPE__SECTION__KEY (see pipeline/common/config.py).
+# Nothing in the pipeline hard-codes dates, file names or row counts: the
+# "as-of" date is always derived from the data that has been ingested.
+
+paths:
+  data_root: data                      # local working area (git-ignored)
+  landing: data/landing                # files arrive here (S4-S6 feeds, public caches)
+  drops: data/drops                    # generator's future daily drops (demo / test)
+  reference: data/reference            # small committed reference files (real, public)
+  lake_root: data/lake                 # bronze/silver/gold Delta tables; may be s3a://bucket/lake (ING-5)
+  warehouse: data/warehouse            # Spark SQL warehouse dir
+  metastore: data/metastore_db         # Derby-backed Hive metastore (ING-3 catalog)
+  serving_out: serving/out             # suppressed, role-scoped JSON bundles served to the dashboard
+  runs: data/runs                      # orchestration logs and per-stage timings (ENG-2)
+  results: data/results                # analytics evaluation outputs (copied to docs/results for the report)
+  ground_truth: data/ground_truth      # generator truth - NEVER read by detection code
+  stream_inbox: data/stream_inbox      # ING-6 streaming file source
+  event_log_dir: data/spark-events     # Spark History Server input (ENG-3 screenshots)
+
+generator:
+  scale_factor: 1.0                    # SF=1 -> >= 25M encounter records for 2021-2025
+  seed: 20260101
+  start_date: "2021-01-01"
+  history_end: "2025-12-31"            # last report_date written to the historical landing zone
+  drop_days: 14                        # future daily drops written to data/drops (demo of incremental loads)
+  n_facilities_min: 600
+  workers: 4
+
+spark:
+  master: "local[*]"
+  driver_memory: "6g"                  # fits a 16 GB laptop (local mode: driver = executor)
+  shuffle_partitions: 32
+  app_name: EpiScope
+  log_level: WARN
+  delta: true                          # ING-7 (ACID + time travel)
+
+quality:
+  max_report_delay_days: 21          # schema contract; later records are kept but flagged late_beyond_contract
+  max_plausible_delay_days: 60       # E09: beyond this a date is treated as an entry error (quarantine)
+  age_min: 0
+  age_max: 120
+  valid_sex: ["M", "F"]
+  dedup_window_days: 7                 # DQ-4
+
+privacy:
+  suppression_min: 5                   # PRV-2: counts 1..4 are never published
+  k_anonymity_k: 5                     # PRV-4
+  age_bands: [0, 5, 15, 25, 45, 65]    # PRV-1: exact age never leaves bronze
+
+diseases:
+  dengue:    {codes: ["A90", "A91"], label: "Dengue"}
+  diarrhoea: {codes: ["A00", "A09"], label: "Acute watery diarrhoea / cholera"}
+  ili:       {codes: ["J10", "J11"], label: "Influenza-like illness"}
+  malaria:   {codes: ["B50", "B51", "B52", "B53", "B54"], label: "Malaria"}
+
+detection:
+  methods: ["ears_c1", "ears_c2", "ears_c3", "cusum"]
+  ears_thresholds: [1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 8.0]
+  cusum_thresholds: [2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 12.0, 14.0, 17.0, 20.0, 25.0]
+  cusum_k: 0.5
+  min_count: 5                         # an alert also needs >= 5 cases in the last 7 days (no alerts on tiny counts)
+  backfill_gap_days: 7                 # facility silent this long -> returning records are back-fill
+  backfill_min_delay: 3
+  eval_window_after_end_days: 7
+  eval_start_buffer_days: 3
+  # C1 operating point = the rule below applied to the trade-off curve (see analytics/evaluation/detection_eval.py):
+  # highest local-outbreak sensitivity with <= 3 false alert events per district-year over the four diseases
+  # (fewer than one per disease per year - a workload a district officer can verify by phone).
+  max_false_alerts_per_district_year: 3.0
+  operating_point: null                # set {method, threshold} to override the rule
+
+forecast:
+  diseases: ["dengue", "diarrhoea", "ili", "malaria"]
+  horizons: [1, 2, 3, 4]
+  backtest_weeks: 52
+  refit_every: 4
+  quantiles: [0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95]
+  min_train_weeks: 104
+
+demand:
+  # Conversion assumptions (AN-6). Sources/rationale in docs/report section 5.
+  los_days:            {dengue: 4.0, diarrhoea: 3.0, ili: 5.0, malaria: 4.0}
+  iv_saline_per_admit: {dengue: 6.0, diarrhoea: 8.0, ili: 1.0, malaria: 2.0}
+  iv_saline_per_case_outpatient: {diarrhoea: 0.3}
+  ns1_kits_per_case:   {dengue: 1.3}
+  ors_per_case:        {diarrhoea: 10.0}
+  antimalarial_per_case: {malaria: 1.0}
+  planning_quantile: 0.8               # upper prediction quantile used as y-hat in AN-7
+  mc_draws: 1000
+
+optimise:
+  # harm_per_unit: value of one missing unit in "patient-equivalents" = share of one patient's need the unit
+  # covers x severity weight (life-threatening 3, severe 2, moderate 1, diagnostic 0.3):
+  #   IV bag   1/6 of an admitted dengue/cholera patient x 3 = 0.5     ACT course 1 falciparum patient x 2 = 2.0
+  #   ORS      1/10 of a diarrhoea episode x 1          = 0.1     NS1 kit    1/1.3 suspected case x 0.3 = 0.23
+  # Documented in the report, Section 5.4; to be agreed with clinicians before operational use.
+  resources:
+    iv_saline:    {unit_cost: 100.0, unit_weight_kg: 1.1,  harm_per_unit: 0.5,   label: "IV saline (1 L bag)"}
+    ns1_kits:     {unit_cost: 300.0, unit_weight_kg: 0.05, harm_per_unit: 0.23,  label: "NS1 rapid test kit"}
+    ors:          {unit_cost: 5.0,   unit_weight_kg: 0.03, harm_per_unit: 0.1,   label: "ORS sachet"}
+    antimalarial: {unit_cost: 250.0, unit_weight_kg: 0.05, harm_per_unit: 2.0,   label: "ACT antimalarial course"}
+  first_half_extra_weight: 1.0          # the first half of each shortfall counts (1 + this) times: life-saving minimum
+  teams:
+    total_available: 20
+    unit_cost: 150000.0
+    harm_per_unit: 20.0                # one missing team ~ 20 patient-equivalents
+  budget_bdt: null                     # null -> 60% of the cost of closing every district's gap
+  budget_levels: [0.2, 0.4, 0.6, 0.8, 1.0, 1.2]
+  equity_alphas: [0.0, 0.1, 0.25, 0.5, 0.75, 0.9]
+  # C3 rule: smallest equity floor that leaves no district with a gap and nothing shipped, if it costs <= 10%
+  max_efficiency_loss_pct: 10
+  transport_capacity_kg_per_division: 60000
+  alert_weight: 1.0
+  growth_weight: 0.5
+
+calendar:
+  rise_threshold: 0.15                 # seasonal index above 1+x marks the season
+  min_season_weeks: 3
+  preposition_lead_weeks: 4
+  campaign_lead_weeks: {dengue: 8, diarrhoea: 4, ili: 4, malaria: 6}
+
+serving:
+  max_total_mb: 10
+  history_weeks: 262
+  alert_days: 180
+  roles_file: config/roles.yaml

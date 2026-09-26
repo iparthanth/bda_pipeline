@@ -1,0 +1,10 @@
+{
+  "name": "episcope-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EpiScope D3.js v7 dashboard (vendored D3, no build step). `npm run serve` starts the token-checking server.",
+  "scripts": {
+    "serve": "PYTHONPATH=. .venv/bin/python -m serving.server"
+  },
+  "license": "UNLICENSED"
+}

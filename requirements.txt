@@ -1,0 +1,31 @@
+# EpiScope - pinned Python environment (Python 3.11, Java 17). Generated with pip freeze; every version is pinned (ENG-1).
+# Direct dependencies: pyspark, delta-spark, pandas, numpy, scipy, statsmodels, scikit-learn, pyarrow, PyYAML, requests, pytest.
+certifi==2026.7.22
+charset-normalizer==3.5.1
+cloudpickle==3.1.2
+delta-spark==3.2.1
+idna==3.20
+importlib_metadata==9.0.1
+iniconfig==2.3.0
+joblib==1.6.0
+numpy==1.26.4
+packaging==26.3
+pandas==2.2.3
+patsy==1.0.3
+pluggy==1.6.0
+py4j==0.10.9.7
+pyarrow==17.0.0
+pyspark==3.5.3
+pytest==8.3.3
+python-dateutil==2.9.0.post0
+pytz==2026.4
+PyYAML==6.0.2
+requests==2.32.3
+scikit-learn==1.5.2
+scipy==1.13.1
+six==1.17.0
+statsmodels==0.14.4
+threadpoolctl==3.7.0
+tzdata==2026.4
+urllib3==2.8.0
+zipp==4.1.0

@@ -1,0 +1,20 @@
+# PRV-3 role-based views. Tokens are NOT stored here: each role's token is read
+# from the environment variable named in `token_env` (see .env.example).
+# national -> every district in detail
+# district -> own district in detail, every other district only aggregated to division level
+roles:
+  national:
+    token_env: EPISCOPE_TOKEN_NATIONAL
+    scope: national
+  district_dhaka:
+    token_env: EPISCOPE_TOKEN_DHAKA
+    scope: district
+    district_pcode: BD3026
+  district_bandarban:
+    token_env: EPISCOPE_TOKEN_BANDARBAN
+    scope: district
+    district_pcode: BD2003
+  district_sylhet:
+    token_env: EPISCOPE_TOKEN_SYLHET
+    scope: district
+    district_pcode: BD6091

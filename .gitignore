@@ -1,0 +1,21 @@
+# data never goes to Git (no files > 50 MB, no line-level data): only data/reference is committed
+data/*
+!data/reference/
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+metastore_db/
+derby.log
+spark-warehouse/
+node_modules/
+docs/report/build/
+*.aux
+*.log
+!docs/**/*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.synctex.gz
+docs/report/EpiScope_report.pdf
