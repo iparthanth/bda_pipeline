@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EpiScope Dashboard</title>
+<meta name="description" content="EpiScope - disease surveillance, forecasting and response planning (synthetic teaching case, CSE 4345).">
+<link rel="stylesheet" href="css/app.css">
+<!-- D3.js v7 and topojson-client are vendored (ISC licence, see vendor/LICENSE.*) so the dashboard works offline. -->
+<script src="vendor/d3.v7.9.0.min.js"></script>
+<script src="vendor/topojson-client.3.1.0.min.js"></script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- suppressed / incomplete cells: 45 degree hatch -->
+    <pattern id="hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <rect width="6" height="6" class="hatch-bg"></rect>
+      <line x1="0" y1="0" x2="0" y2="6" class="hatch-line"></line>
+    </pattern>
+  </defs>
+</svg>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>EpiScope</h1>
+    <span class="subtitle">Surveillance · forecasting · response planning</span>
+  </div>
+  <div class="controls" role="toolbar" aria-label="Global filters">
+    <label>Disease <select id="sel-disease"></select></label>
+    <label>Area <select id="sel-area"></select></label>
+    <label>Resource <select id="sel-resource"></select></label>
+    <button id="btn-reset" type="button">Reset selection</button>
+    <button id="btn-theme" type="button" aria-label="Toggle dark mode">◐</button>
+  </div>
+  <div class="session" id="session"></div>
+</header>
+
+<div id="banner" class="banner" role="note"></div>
+
+<section id="login" class="login" hidden>
+  <h2>Sign in</h2>
+  <p>Paste the access token for your role (national or district). Tokens are issued by the Ministry's data team
+    (<code>.env</code> after <code>make env</code> in this prototype; <code>make serve</code> prints ready-made links).</p>
+  <form id="login-form"><input id="token" type="password" autocomplete="off" placeholder="access token" aria-label="Access token">
+    <button type="submit">Open dashboard</button></form>
+  <p id="login-error" class="error"></p>
+</section>
+
+<main id="app" class="grid" hidden>
+  <section class="panel p-map" id="view-map">
+    <header><h2>1 · Incidence per 100,000 and alerts</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div class="panel-tools"><button id="btn-play" type="button">▶ Play spread</button><span id="map-caption" class="muted"></span></div>
+    <div class="chart" id="map"></div>
+    <div class="legend" id="map-legend"></div>
+  </section>
+
+  <section class="panel p-ts" id="view-ts">
+    <header><h2>2 · Weekly cases, forecast and alert threshold</h2><span class="fresh" data-fresh="forecast_origin"></span></header>
+    <div class="chart" id="ts"></div>
+    <div class="legend" id="ts-legend"></div>
+    <p class="note">Brush the lower strip to choose the period used by the map and heatmap. Shaded bands: 50/80/90% prediction intervals.
+      Last 4 weeks are still being reported: dashed = nowcast estimate.</p>
+  </section>
+
+  <section class="panel p-table" id="view-table">
+    <header><h2>5 · Ranked early-warning table</h2><span class="fresh" data-fresh="detection"></span></header>
+    <div class="table-wrap"><table id="alert-table" aria-describedby="alert-caption"></table></div>
+    <p id="alert-caption" class="note"></p>
+  </section>
+
+  <section class="panel p-heat" id="view-heat">
+    <header><h2>3 · Seasonal heatmap (epi-week × year)</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div class="chart" id="heat"></div>
+    <div class="legend" id="heat-legend"></div>
+  </section>
+
+  <section class="panel p-whatif" id="view-whatif">
+    <header><h2>6 · What-if: budget, alert threshold, equity floor</h2><span class="fresh" data-fresh="stock"></span></header>
+    <div class="sliders">
+      <label>Budget <input type="range" id="sl-budget"><output id="out-budget"></output></label>
+      <label>Alert threshold <input type="range" id="sl-thr"><output id="out-thr"></output></label>
+      <label>Equity floor α <input type="range" id="sl-alpha"><output id="out-alpha"></output></label>
+    </div>
+    <div class="tiles" id="whatif-tiles"></div>
+    <div class="chart" id="curve"></div>
+  </section>
+
+  <section class="panel p-alloc" id="view-alloc">
+    <header><h2>4 · Forecast demand, stock and recommended allocation</h2><span class="fresh" data-fresh="stock"></span></header>
+    <div class="chart" id="alloc"></div>
+    <div class="legend" id="alloc-legend"></div>
+  </section>
+
+  <section class="panel p-cal" id="view-cal">
+    <header><h2>Preparedness calendar (next 12 months)</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div class="chart" id="cal"></div>
+    <div class="legend" id="cal-legend"></div>
+  </section>
+
+  <section class="panel p-seir" id="view-seir">
+    <header><h2>Novel respiratory surge: SEIR what-if</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div class="chart" id="seir"></div>
+    <div class="legend" id="seir-legend"></div>
+  </section>
+
+  <section class="panel p-dq" id="view-dq">
+    <header><h2>Data quality of each load</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div id="dq"></div>
+  </section>
+
+  <section class="panel p-eval" id="view-eval">
+    <header><h2>How good are the signals? (evaluation)</h2><span class="fresh" data-fresh="cases"></span></header>
+    <div class="chart" id="eval"></div>
+    <div id="eval-text" class="note"></div>
+  </section>
+</main>
+<div id="tooltip" class="tooltip" role="tooltip" hidden></div>
+<footer class="foot">Synthetic data - CSE 4345 teaching case, not real patients. Boundaries: OCHA COD-AB (HDX). Counts 1-4 are shown as “&lt;5”.</footer>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
