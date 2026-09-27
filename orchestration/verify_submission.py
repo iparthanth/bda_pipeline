@@ -17,7 +17,7 @@ from pipeline.common.config import REPO_ROOT
 REQ_IDS = [f"ING-{i}" for i in range(1, 8)] + [f"DQ-{i}" for i in range(1, 5)] + [f"PRV-{i}" for i in range(1, 5)] + \
           [f"AN-{i}" for i in range(1, 11)] + [f"VIS-{i}" for i in range(1, 8)] + [f"ENG-{i}" for i in range(1, 5)]
 LAYOUT = ["generator", "pipeline", "analytics", "serving", "dashboard", "tests", "docs"]
-FILES = ["README.md", "AI_USAGE.md", "docs/proposal.md", "requirements.txt", "docker-compose.yml", ".env.example",
+FILES = ["README.md", "AI_USAGE.md", "docs/proposal.md", "docs/risk_log.md", "requirements.txt", "docker-compose.yml", ".env.example",
          "Makefile", "docs/EpiScope_report.pdf"]
 
 
@@ -59,6 +59,7 @@ def main() -> int:
     check("no line-level data tracked", not any(re.match(r"data/(landing|lake|drops|ground_truth)/", f) for f in tracked))
     authors = [line.split("\t")[-1] for line in git("shortlog", "-sne", "HEAD").strip().split("\n") if line.strip()]
     check("commits from three members", len(authors) >= 3, f"{len(authors)} author(s): {', '.join(authors)}", todo=True)
+    check("tag checkpoint exists (M2)", "checkpoint" in git("tag").split(), "git push origin checkpoint")
     check("tag v1.0 exists", "v1.0" in git("tag").split(), "git tag v1.0 && git push origin v1.0", todo=True)
     report_tex = (REPO_ROOT / "docs" / "report" / "EpiScope_report.tex")
     if report_tex.exists():

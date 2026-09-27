@@ -101,6 +101,7 @@ async function start() {
   const synth = Object.entries(m.provenance).filter(([, s]) => s === "synthetic_fallback").map(([k]) => k.split("_")[0]);
   document.getElementById("banner").innerHTML = `<strong>${m.synthetic_notice}</strong>` +
     (synth.length ? ` Public sources replaced by labelled synthetic fallback in this build: ${synth.join(", ")}.` : " Public sources: real (see provenance).") +
+    (m.weather_observed_until ? ` Weather is observed (NOAA GSOD stations) to ${m.weather_observed_until}; later days use station climatology.` : "") +
     ` Small counts (1-4) are shown as “&lt;5”.`;
   freshness(m);
   const w = data.weekly.weeks.length;

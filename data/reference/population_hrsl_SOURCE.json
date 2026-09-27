@@ -1,0 +1,23 @@
+{
+  "source": "Meta / CIESIN High Resolution Settlement Layer population maps (Data for Good)",
+  "licence": "CC BY 4.0",
+  "url": "https://dataforgood-fb-data.s3.amazonaws.com/demographic_csvs/<layer>/<layer>_<tile>.csv",
+  "layers": [
+    "population",
+    "men",
+    "women",
+    "children_under_five",
+    "youth_15_24",
+    "elderly_60_plus"
+  ],
+  "method": "cells in (20.5, 26.8, 88.0, 92.8) summed on a 0.01-degree grid, grid centres assigned to OCHA COD-AB ADM2 districts (point in polygon); cells outside every district (India/Myanmar/sea) dropped",
+  "outside_districts_in_box": {
+    "population": 94710637.2480802,
+    "men": 48481980.66602346,
+    "women": 46228656.582056664,
+    "children_under_five": 8451992.25835634,
+    "youth_15_24": 18492325.80074235,
+    "elderly_60_plus": 7480064.493943787
+  },
+  "retrieved_at": "2026-09-27T05:22:39+00:00"
+}

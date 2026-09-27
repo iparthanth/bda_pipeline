@@ -1,14 +1,15 @@
 # EpiScope - Big Data Surveillance, Forecasting and Response Planning
 
 **Video presentation:** [VIDEO LINK - YouTube (Unlisted) or Drive/OneDrive "anyone with the link"; chapter timestamps below]
-**Report (PDF):** [`docs/EpiScope_report.pdf`](docs/EpiScope_report.pdf) · **Proposal (M1):** [`docs/proposal.md`](docs/proposal.md) · **AI usage:** [`AI_USAGE.md`](AI_USAGE.md)
+**Report (PDF):** [`docs/EpiScope_report.pdf`](docs/EpiScope_report.pdf) · **Proposal (M1):** [`docs/proposal.md`](docs/proposal.md) · **Risk log (M2):** [`docs/risk_log.md`](docs/risk_log.md) · **AI usage:** [`AI_USAGE.md`](AI_USAGE.md)
 
 CSE 4345 Big Data Analytics - Complex Engineering Problem, Premier University Chittagong, Spring 2026.
 Group [GROUP NUMBER]: [MEMBER 1 NAME, ID] · [MEMBER 2 NAME, ID] · [MEMBER 3 NAME, ID]
 
 > **All encounter, facility and stock data are synthetic** (a teaching case, not real patients). Public data:
-> district boundaries from OCHA COD-AB (HDX), OpenDengue V1.3, Open-Meteo weather and HDX/BBS 2022 population.
-> When a public source cannot be downloaded, the pipeline uses a clearly labelled synthetic fallback and says so
+> district boundaries from OCHA COD-AB (HDX), OpenDengue V1.3, NOAA GSOD station weather and Meta/CIESIN HRSL
+> population, the last two pinned as real snapshots in `data/reference` so every clone generates the same data.
+> When a public source cannot be obtained, the pipeline uses a clearly labelled synthetic fallback and says so
 > in `data/landing/public/provenance.json` and in a banner on the dashboard.
 
 ---
@@ -21,7 +22,7 @@ Group [GROUP NUMBER]: [MEMBER 1 NAME, ID] · [MEMBER 2 NAME, ID] · [MEMBER 3 NA
 | Python | 3.11 | `python3 -m venv` available |
 | Java | **17** | Spark 3.5 supports Java 8/11/17 (not 21). The Makefile picks Java 17 automatically if installed |
 | make | any | |
-| Internet (first run) | - | PyPI, Maven Central (Delta Lake jars), Open-Meteo, HDX, GitHub raw (boundaries, OpenDengue) |
+| Internet (first run) | - | PyPI, Maven Central (Delta Lake jars), GitHub raw (boundaries, OpenDengue); weather and population are pinned in `data/reference` |
 | Docker (optional) | 24+ | alternative to the above: `docker compose up` |
 
 All Python dependencies are pinned in [`requirements.txt`](requirements.txt); D3.js v7.9.0 and
@@ -54,6 +55,9 @@ or, with only Docker installed (brings its own Python 3.11 and Java 17):
 docker compose up                    # full run, then the dashboard at http://localhost:8765
 SF=0.02 docker compose up            # quick run (PowerShell: $env:SF="0.02"; docker compose up)
 ```
+
+After the first run, `docker compose up --no-deps dashboard` starts only the dashboard (without `--no-deps`
+Docker would run the whole pipeline again first).
 
 `make all SF=0.25` runs a smaller scale factor. `make all` at SF = 1 (28.2 M encounter rows) took 22.5 min on a
 4-vCPU / 15 GB machine (per-stage times for SF 0.25 / 0.5 / 1 in `docs/experiments/scaling.csv`); the limit is 45 min.
@@ -89,6 +93,17 @@ link per role; tokens live only in the git-ignored `.env`). Every data request i
    epi-weeks), rebuilds the affected gold window, and regenerates **alerts, forecasts, allocation plan,
    calendar and dashboard data**. Running the same command twice changes nothing.
 
+   **With Docker instead of `make`:** copy the drop into the project folder (it is mounted into the container),
+   e.g. `hidden_drop/`, then
+   ```bash
+   docker compose run --rm pipeline python -m orchestration.dag drop --source hidden_drop
+   docker compose up --no-deps dashboard
+   ```
+4. Optional check: `make inspect WHAT=idempotency` (Docker: `docker compose run --rm pipeline python -m
+   orchestration.inspect_lake idempotency`) shows that every `encounter_id` is in silver exactly once, and
+   `make inspect WHAT=asof` shows what the lake knew before the drop (Delta time travel) next to what it
+   knows now.
+
 The generator writes 14 rehearsal drops to `data/drops/<date>/` (same schema, including two unannounced outbreaks
 and quality defects): `make drop DROP=data/drops` loads all of them at once. Rehearsed at SF = 1: 13 new days
 (174,804 rows) ingested and every output regenerated in 11.4 min, and the two injected outbreaks became the top two
@@ -97,7 +112,7 @@ alerts (`docs/experiments/hidden_drop_rehearsal.json`).
 ## 4. Architecture summary
 
 ```
- S1 boundaries (COD-AB)  S2 population  S3 Open-Meteo  S7 OpenDengue      S4 encounters  S5 registry  S6 stock/beds
+ S1 boundaries (COD-AB)  S2 population  S3 NOAA GSOD   S7 OpenDengue      S4 encounters  S5 registry  S6 stock/beds
           \________________ raw cache (landing/public) ___/                  \___ landing / drops (CSV, JSONL) __/
                                    |  ING-1: header sniffing, SHA-256 manifest, metadata (source, load_ts, batch_id, checksum)
                                    v
@@ -135,10 +150,10 @@ per-district GLM as the operational forecaster (C5); CUSUM on historical limits 
 | ING-1 | M | `generator/` (S4-S6, `generate.py`), `generator/fetch_public.py` (S1-S3, S7), `pipeline/bronze/ingest.py` | §4.1, §4.2 |
 | ING-2 | M | all heavy steps in PySpark: `pipeline/*`, `analytics/*` (`applyInPandas`, window functions) | §3 |
 | ING-3 | M | `pipeline/silver/transform.py` (partitioned by `epi_year, adm1_pcode`), `pipeline/gold/build.py`, `pipeline/common/spark.py` (`register_table`) | §3.2 |
-| ING-4 | M | `pipeline/silver/transform.py` (MERGE), `pipeline/gold/build.py` (`replaceWhere` window), `pipeline/run_load.py`, `tests/test_pipeline_integration.py` | §4.3, §6.5 |
+| ING-4 | M | `pipeline/silver/transform.py` (MERGE), `pipeline/gold/build.py` (`replaceWhere` window), `pipeline/run_load.py`, `tests/test_pipeline_integration.py`, `orchestration/rehearse.py` -> `docs/experiments/incremental_drop.json` | §4.3, §6.5 |
 | ING-5 | S | `pipeline/common/spark.py` (S3A when `lake_root` = `s3a://`), `docker-compose.yml` (MinIO profile) | §3.2 |
 | ING-6 | S | `pipeline/streaming/stream_alerts.py`, `make stream` | §3.3, §6.5 |
-| ING-7 | C | Delta tables everywhere; `gold.reporting_triangle` + Delta versions for "what did we know on day t" | §4.3, §5.2 |
+| ING-7 | C | Delta tables everywhere; `orchestration/inspect_lake.py asof` reads `gold.weekly_counts` with `versionAsOf` ("what did we know on day t") -> `docs/experiments/time_travel.json`; the backtest uses `gold.reporting_triangle`, checked against it | §4.3, §6.5 |
 | DQ-1 | M | `pipeline/quality/rules.py` (16 encounter + 6 facility + 5 stock rules), `silver.quarantine` | §4.4 |
 | DQ-2 | M | `gold.dq_report`, `gold.dq_rule_results` (`pipeline/gold/build.py::dq_tables`), dashboard "Data quality" view | §4.4, §7 |
 | DQ-3 | M | `bronze_batch_ids` on every gold row, `gold.lineage_batches`, `bronze.ingest_manifest` | §4.5 |
@@ -174,15 +189,18 @@ per-district GLM as the operational forecaster (C5); CUSUM on historical limits 
 ```
 README.md  AI_USAGE.md  Makefile  requirements.txt  docker-compose.yml  Dockerfile  .env.example  package.json
 config/          episcope.yaml (all parameters), roles.yaml
-generator/       fetch_public.py (S1-S3, S7), epi_model.py, facilities.py, generate.py (S4-S6 + ground truth)
+generator/       fetch_public.py (S1-S3, S7), build_reference.py (pinned real S2/S3 snapshots), epi_model.py,
+                 facilities.py, generate.py (S4-S6 + ground truth)
 pipeline/        bronze/ silver/ gold/ quality/ streaming/ common/ experiments/ run_load.py
 analytics/       detection/ forecast/ demand/ optimise/ calendar/ scenario/ privacy/ evaluation/ run_analytics.py
 serving/         export.py (gold -> suppressed JSON), suppress.py, server.py, out/ (exported bundles)
 dashboard/       index.html, css/, js/ (D3 modules), vendor/ (d3, topojson-client), data/geo/ (TopoJSON)
-orchestration/   dag.py (DAG + retries), init_env.py, scale_experiment.py, collect_results.py
+orchestration/   dag.py (DAG + retries), init_env.py, inspect_lake.py (idempotency, quarantine, time travel),
+                 rehearse.py (incremental + hidden-drop rehearsal), scale_experiment.py, collect_results.py
 tests/           pytest suite
-docs/            proposal.md, EpiScope_report.pdf, report/ (LaTeX), results/, experiments/, video/, usability/
-data/reference/  small real reference files (districts, upazilas, OpenDengue) - everything else in data/ is generated
+docs/            proposal.md, risk_log.md, EpiScope_report.pdf, report/ (LaTeX), results/, experiments/, video/, usability/
+data/reference/  small real reference files (districts, upazilas, OpenDengue, NOAA GSOD station weather, HRSL district
+                 population) - everything else in data/ is generated
 ```
 
 ## 7. Video chapters (timestamps to be filled in after recording)
@@ -203,8 +221,17 @@ Recording plan and script: [`docs/video/video_script.md`](docs/video/video_scrip
 | Source | Licence / terms | Use |
 |---|---|---|
 | OCHA COD-AB Bangladesh ADM2/ADM3 v03 (HDX), via a pinned GitHub mirror | CC BY-IGO | district/upazila boundaries, centroids, facility placement |
-| HDX COD-PS Bangladesh (BBS Census 2022) | CC BY-IGO | population denominators (S2) |
-| Open-Meteo historical archive | CC BY 4.0 | daily rainfall, temperature, humidity per district (S3) |
+| Meta / CIESIN High Resolution Settlement Layer population (AWS Open Data), aggregated to districts by `generator/build_reference.py` | CC BY 4.0 | population denominators by district, sex and age (S2, pinned in `data/reference`) |
+| NOAA Global Surface Summary of the Day, 38 BMD stations (AWS Open Data), inverse-distance weighted to district centroids | public domain | daily rainfall, temperature, humidity per district (S3, pinned in `data/reference/gsod`) |
+| Optional refresh: HDX COD-PS (BBS Census 2022) and the Open-Meteo archive | CC BY-IGO / CC BY 4.0 | `python -m generator.fetch_public --refresh` downloads these instead of the pinned snapshots |
 | OpenDengue V1.3 | CC BY 4.0 | checking synthetic dengue seasonality (S7) |
 | D3.js 7.9.0, topojson-client 3.1.0 | ISC | dashboard (vendored, licences in `dashboard/vendor/`) |
 | Synthetic S4-S6 | generated by this repository | encounters, registry, stock |
+
+**Why S2 and S3 are pinned snapshots.** The weather drives the synthetic epidemiology (dengue lags rainfall and
+temperature), so a different weather download would generate a different dataset and different results. Pinning
+real snapshots makes a clean clone reproduce the report exactly, with or without internet access. The NOAA
+mirror ends on 24 Aug 2025; later days use each district's day-of-year climatology from the same stations and
+are labelled `climatology_fill` in `silver.weather_daily` and on the dashboard. HRSL publishes total, men,
+women, under-5, 15-24 and 60+ layers; the split of the remaining ages into the 5-14 / 25-44 / 45-64 bands uses
+the fixed proportions stated in `generator/fetch_public.py` (an assumption, see the report, Section 4).

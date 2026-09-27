@@ -299,6 +299,7 @@ def export() -> dict:
         "freshness": {"cases": bundle["alerts"]["as_of"], "stock": str(stock_date), "weather": str(weather_last),
                       "forecast_origin": str(fc.origin_week.max())[:10], "detection": bundle["alerts"]["as_of"]},
         "provenance": {k: v.get("status") for k, v in prov.items() if isinstance(v, dict)},
+        "weather_observed_until": prov.get("S3_weather", {}).get("observed_until"),
         "synthetic_notice": "Encounter, facility and stock data are SYNTHETIC (CSE 4345 teaching case).",
         "suppression": {"min_count": 5, "rule": "counts 1-4 shown as '<5'; complementary suppression protects district/division/national totals"},
         "districts": dist[["adm2_pcode", "adm2_name", "adm1_pcode", "adm1_name", "population", "center_lat", "center_lon"]].to_dict("records"),

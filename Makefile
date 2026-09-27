@@ -12,6 +12,8 @@
 #   make test                  automated tests (quality rules, de-identification, optimiser, suppression, idempotency)
 #   make scale                 scalability experiment SF in {0.25, 0.5, 1} (ENG-2)
 #   make optimisations         Spark optimisation before/after experiment (ENG-3)
+#   make inspect               look inside the lake: tables, idempotency, quarantine, Delta history, time travel
+#                              (WHAT=tables|idempotency|quarantine|history|asof)
 #   make report                build docs/report/EpiScope_report.pdf from the latest results
 
 SHELL := /bin/bash
@@ -26,7 +28,7 @@ export PATH := $(JAVA17)/bin:$(PATH)
 endif
 export PYTHONPATH := $(CURDIR)
 
-.PHONY: setup env all pipeline serve drop incremental stream test scale optimisations report clean results
+.PHONY: setup env all pipeline serve drop incremental stream test scale optimisations report clean results inspect
 
 setup: .venv/.installed
 .venv/.installed: requirements.txt
@@ -62,6 +64,9 @@ scale: setup env
 
 optimisations: setup env
 	$(PY) -m pipeline.experiments.spark_optimisations
+
+inspect: setup env
+	$(PY) -m orchestration.inspect_lake $(or $(WHAT),all)
 
 results:
 	$(PY) -m orchestration.collect_results

@@ -75,7 +75,7 @@ Member & Student ID & Lead role \\
 \end{tabular}\par
 \vspace{1.2cm}
 \begin{tabular}{rl}
-Repository: & \todo{https://github.com/<owner>/<repo> (private, shared with the instructor, tag v1.0)} \\
+Repository: & \url{https://github.com/iparthanth/bda_pipeline} (private, shared with the instructor, tag \texttt{v1.0}) \\
 Video: & \todo{shareable video link} \\
 \end{tabular}\par
 \vfill
@@ -120,10 +120,10 @@ rises early, (ii) forecasts cases and hospital demand 1--4 weeks ahead, (iii) re
 limited national stock and rapid-response teams, and (iv) produces a preparedness calendar -- explainably,
 robustly to late and incomplete data, on modest infrastructure, and without exposing identifiable patients.
 
-\textbf{Requirements.} We translated the brief into the catalogue of 35 requirement IDs (ING, DQ, PRV, AN,
+\textbf{Requirements.} We translated the brief into the catalogue of 36 requirement IDs (ING, DQ, PRV, AN,
 VIS, ENG) and tracked every one in the repository README (ID $\rightarrow$ file $\rightarrow$ report section).
-All 21 Must items and all 11 Should items are implemented; of the 5 Could items we implemented ING-7
-(Delta time travel), PRV-4 (k-anonymity), AN-10 (SEIR) and VIS-7 (mobile layout and animated playback).
+All 23 Must and all 9 Should items are implemented, and so are the 4 Could items: ING-7 (Delta time travel),
+PRV-4 (k-anonymity), AN-10 (SEIR) and VIS-7 (mobile layout and animated playback).
 
 \textbf{Stakeholders} (Table~\ref{tab:stake}) have conflicting needs, which drive five explicit
 conflicts (C1--C5, Section~\ref{sec:cep}). The key analytical difficulty is \emph{interdependence}: ingestion
@@ -159,6 +159,16 @@ P6 Stakeholders & Seven stakeholder groups with different needs (Table~\ref{tab:
 P7 Interdependence & One code path end to end: the same silver rules feed detection, forecasting and streaming; detection sets optimiser weights and team demand; forecast quantiles set planning demand; every gold row carries the bronze batch IDs it came from, so a bad input batch can be traced to every output it touched.\\\bottomrule
 \end{tabular}\end{table*}
 
+\textbf{Activity attributes.} \emph{A1 (range of resources):} two weeks, three people, one 16\,GB machine in
+Spark local mode and no paid cloud; the scaling experiment shows SF\,=\,1 fits. \emph{A2 (interaction):} one
+configuration file and one DAG tie the generator, lakehouse, analytics and serving together, and the dashboard
+reads only the exported bundles, so every stage is tested against the next. \emph{A3 (innovation):} climate
+(lagged station rainfall and temperature), clinical encounters and stock levels are combined in one allocation
+model with an explicit equity floor. \emph{A4 (consequences):} a missed outbreak or a wrong shipment costs lives,
+so the operating point, the equity rule and every forecast carry stated uncertainty, and privacy is enforced by
+design (Section~\ref{sec:privacy}). \emph{A5 (familiarity):} course tools (Spark, Delta, D3) applied to
+epidemiology, where we had to learn surveillance statistics, reporting delays and interval scoring.
+
 \textbf{C1 sensitivity vs.\ specificity.} We evaluated four detectors over a threshold grid against the
 ground-truth file (which the detector never reads) and chose the operating point \OpMethod{}\,$\geq$\,\OpThreshold{}
 with the rule ``highest sensitivity with at most three false alert events per district-year over the four
@@ -186,7 +196,7 @@ lists the main alternatives we considered.
   src/.style={box, fill=gray!10, text width=2.3cm}, lay/.style={box, fill=blue!8, text width=2.9cm}, ana/.style={box, fill=orange!10, text width=2.4cm},
   arr/.style={-{Stealth[length=2mm]}, thick}]
 \node[src] (s1) {S1 COD-AB boundaries\\S2 BBS population};
-\node[src, below=0.15cm of s1] (s3) {S3 Open-Meteo weather\\S7 OpenDengue};
+\node[src, below=0.15cm of s1] (s3) {S3 NOAA GSOD weather\\S7 OpenDengue};
 \node[src, below=0.15cm of s3] (s4) {S4 encounters (25M+)\\S5 registry, S6 stock};
 \node[lay, right=0.7cm of s3, text width=2.6cm] (b) {\textbf{Bronze} (Delta)\\raw strings, batch-partitioned, SHA-256 manifest, ingestion metadata};
 \node[lay, right=0.5cm of b] (s) {\textbf{Silver} (Delta)\\27 DQ rules $\rightarrow$ quarantine; salted hash, age bands; MERGE on encounter\_id; epi\_year$\times$division partitions; episode links};
@@ -255,15 +265,22 @@ Serving & stdlib server + static JSON & database-backed API (not needed for $<$1
 \section{Data Generation, Quality, Lineage and Privacy}\label{sec:data}
 \subsection{Public data (S1--S3, S7)}
 District (ADM2, 64) and upazila (ADM3, 507) boundaries and centroids come from OCHA COD-AB v03 (HDX),
-simplified to a 55\,kB TopoJSON for the browser. Weather is requested from the Open-Meteo archive at each
-district centroid (rate-limited, responses cached unmodified in the landing zone and ingested as raw bytes),
-population by age and sex from the HDX COD-PS table (BBS census 2022), and the OpenDengue V1.3 Bangladesh
-series is used to check the synthetic seasonality. Each source records its status in a provenance file shown
-on the dashboard: \emph{real}, \emph{reference} (committed real snapshot) or \emph{synthetic fallback} when a
-provider is unreachable. In the build reported here boundaries were \ProvBound{}, weather \ProvWeather{} and
-population \ProvPop{} (the build machine's network policy blocked Open-Meteo and HDX); re-running
-\texttt{make all} with internet access replaces the fallbacks, and every number in this report is
-regenerated by \texttt{make report}.
+simplified to a 55\,kB TopoJSON for the browser; the OpenDengue V1.3 Bangladesh series~\cite{opendengue} checks
+the synthetic seasonality. Because weather drives the synthetic epidemiology, S2 and S3 are \emph{pinned real
+snapshots} committed in \texttt{data/reference}, so every clone generates the same data as this report (a
+design decision: our build machine could not reach Open-Meteo, HDX or WorldPop, and a live download would
+change every result). \textbf{Weather (S3)}: raw daily NOAA GSOD files~\cite{gsod} of \WxStations{} Bangladesh
+Meteorological Department stations, stored unmodified and ingested as raw bytes; silver converts units, derives
+relative humidity from dew point (Magnus formula) and interpolates to district centroids (inverse-distance
+squared, four nearest stations within 150\,km). The mirror ends on \WxObservedUntil{}; the remaining
+\WxFillPct{}\% of district-days use each district's day-of-year climatology of the same stations and are labelled
+\texttt{climatology\_fill}. \textbf{Population (S2)}: Meta/CIESIN HRSL layers~\cite{hrsl} (total, men, women,
+under-5, 15--24, 60+; about 12\,GB of 30\,m cells) summed on a 0.01$^\circ$ grid and assigned to the COD-AB
+districts by point in polygon (\texttt{generator/build\_reference.py}); national total \PopTotalM{}\,M. The
+5--14/25--44/45--64 split of the remaining ages uses stated fixed proportions (an assumption). Provenance
+(\emph{real}, \emph{reference} or \emph{synthetic fallback}) is recorded per source and shown on the dashboard:
+boundaries \ProvBound{}, weather \ProvWeather{}, population \ProvPop{}. \texttt{fetch\_public --refresh}
+downloads Open-Meteo~\cite{openmeteo} and the HDX COD-PS census table instead where reachable.
 
 \subsection{Synthetic encounter generator (S4--S6)}
 \texttt{generator/generate.py} is parameterised by a scale factor and a seed and is deterministic: each
@@ -429,10 +446,10 @@ and flags \SensNRS{} of districts in the national surge (median \MedDelayNRS{} d
 facility, \ArtOnboardNaive{} vs \ArtOnboardGuarded{} at the operating point (at lower thresholds the new-facility
 flag routes such days to ``verify reporting'' instead of ``alert'').
 \textbf{Interpretation.} The seasonal CUSUM dominates the EARS family everywhere on the curve: at a comparable
-false-alert rate (about 3 per district-year) EARS C3 finds 59\% of local outbreaks and EARS C1 12\%, CUSUM over
-90\%. EARS compares a day with the previous week only, so every seasonal upswing and every post-flood spike looks
+false-alert burden (at most 3.5 per district-year) EARS C1 finds \EarsCOneSensLowFA{}, C2 \EarsCTwoSensLowFA{} and C3
+\EarsCThreeSensLowFA{} of local outbreaks, CUSUM \CusumSensLowFA{}. EARS compares a day with the previous week only, so every seasonal upswing and every post-flood spike looks
 anomalous; CUSUM compares with the same season in earlier years and accumulates small persistent excesses. The
-price is delay: \MedDelayLocal{} days at the operating point versus 3--5 days at thresholds that produce
+price is delay: \MedDelayLocal{} days at the operating point versus \CusumDelayHighFA{} days at thresholds that produce
 10--20 false alerts per district-year -- this is conflict C1 in numbers, and the what-if slider lets
 epidemiologists move along it. The national surge is detected in every district, but late relative to its
 injected start (\MedDelayNRS{} days): the start is defined as the day seeding began, when only a few infections
@@ -512,9 +529,8 @@ factors on \ScaleCpus{} vCPUs and \ScaleMem{}\,GB RAM (Spark local mode, 6\,GB h
 \ScaleMinC{} minutes, well inside the 45-minute limit. Time grows roughly linearly with rows in the load stage,
 while analytics is almost constant because it works on weekly/daily aggregates whose size depends on districts
 and weeks, not on encounters. The Spark UI shows the silver stage as the bottleneck: it evaluates 16 rules,
-hashes 28M IDs, shuffles once by \texttt{encounter\_id} for resubmission handling and writes 48 partitions. Caching
-the evaluated batch (reused by three actions) did not shorten it measurably on this machine (510\,s vs 549\,s), because
-the cached data spill to disk; the next step would be to fold the statistics into the write job.
+hashes every patient ID, shuffles once by \texttt{encounter\_id} for resubmission handling and writes 48 partitions;
+the next step would be to fold the per-rule statistics into the write job instead of separate actions.
 
 \begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{2.2pt}
 \caption{Scalability: seconds per stage, total minutes, data size (GB; the SF\,=\,1 lake also holds the Delta versions of three later incremental loads)}\label{tab:scale}
@@ -525,8 +541,8 @@ SF & Rows & Gen. & Bronze & Silver & Gold & Analyt. & Export & Total & Landing &
 
 Two optimisations with before/after evidence (median of three runs on the SF\,=\,1 lake, Spark UI screenshots in
 \texttt{docs/experiments/screenshots}): (i) \textbf{broadcast join of the facility registry} -- with broadcasting
-disabled Spark plans a SortMergeJoin that shuffles all 28.2M encounters (646\,MB of shuffle data) and sorts both
-sides; broadcasting the 786-row registry gives a BroadcastHashJoin with no shuffle of the large side:
+disabled Spark plans a SortMergeJoin that shuffles all \GenRows{} bronze encounters (Fig.~\ref{fig:sparkui}) and sorts both
+sides; broadcasting the \GenFacilities{}-row registry gives a BroadcastHashJoin with no shuffle of the large side:
 \OptBcastBefore{}\,s $\rightarrow$ \OptBcastAfter{}\,s (\OptBcastSpeedup{}$\times$); (ii) \textbf{columnar storage} --
 the same per-facility, per-diagnosis count over all encounters reads \OptColCsvGB{}\,GB of CSV in the landing zone
 but only two of 17 columns from \OptColParquetGB{}\,GB of zstd Parquet in bronze: \OptColBefore{}\,s
@@ -537,11 +553,20 @@ $\rightarrow$ \OptColAfter{}\,s (\OptColSpeedup{}$\times$). (iii) \textbf{Partit
 Adaptive query execution (skew-join handling, coalescing of the 32 shuffle partitions) is enabled throughout;
 we did not run a separate skew experiment.
 
+\begin{figure*}[t]\centering
+\includegraphics[width=0.49\textwidth]{spark_ui_broadcast_off.png}\hfill
+\includegraphics[width=0.49\textwidth]{spark_ui_broadcast_on.png}
+\caption{Spark UI (History Server, SQL tab) for the registry join on the SF\,=\,1 lake. Left: broadcast disabled --
+both sides are shuffled (Exchange) and sorted before a SortMergeJoin. Right: BroadcastHashJoin -- the small facility
+registry is broadcast and the encounters are joined where they are read, with no shuffle of the large side.}
+\label{fig:sparkui}
+\end{figure*}
+
 \subsection{Incremental loads, streaming and calendar}\label{sec:evinc}
 \textbf{Incremental and idempotent (\req{ING-4}).} Loading the first future daily drop into the SF\,=\,1 lake added
 \IncNewRows{} encounters (including late records whose onsets fall in earlier epi-weeks) in \IncLoadSec{}\,s, and
 the whole drop DAG including analytics and dashboard export took \IncDagMin{} minutes. Re-running the same day
-returned ``nothing new'' in 18\,s; a forced re-ingest (\IncForceSec{}\,s) left silver at \IncSilverRows{} rows, all
+returned ``nothing new'' in \IncRerunSec{}\,s; a forced re-ingest (\IncForceSec{}\,s) left silver at \IncSilverRows{} rows, all
 with distinct \texttt{encounter\_id}, and every gold count unchanged. \textbf{Hidden-drop rehearsal.} Pointing
 \texttt{make drop} at the folder with all 14 generated days (same schema, new outbreaks, quality defects)
 skipped the day already loaded and ingested the other \RehDays{} days (\RehRows{} rows, \RehQuar{} quarantined)
@@ -550,8 +575,11 @@ change. \textbf{Streaming (\req{ING-6}).} With the Structured Streaming job runn
 encounter file dropped in the inbox refreshed \texttt{alerts.json} after a median of \StreamLatencyMed{}\,s
 (maximum \StreamLatencyMax{}\,s), inside the 5-minute requirement. \textbf{Time travel (\req{ING-7}).} Every
 load creates a new Delta version of silver and gold, so ``what did we know on day $t$'' is a
-\texttt{versionAsOf}/\texttt{timestampAsOf} read; the backtest uses the reporting triangle, which gives the same
-answer at weekly resolution without storing a version per day.
+\texttt{versionAsOf} read (\texttt{make inspect WHAT=asof}). Reading \texttt{gold.weekly\_counts} at the version
+before the rehearsal drop shows the counts known on \TTKnownUntil{}; the drop's late reports revised
+\TTRevisedWeeks{} of the \TTRows{} recent disease-weeks. The backtest rebuilds the same knowledge from the reporting
+triangle without keeping a version per day; at weekly resolution it differs from the time-travel read by
+\TTTriangleDiff{} cases in total (reports made later in the as-of week), which validates that shortcut.
 Table~\ref{tab:cal} shows the dengue calendar for the next 12 months.
 
 \begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
@@ -601,8 +629,8 @@ efficiency--equity curve highlights the current $\alpha$.
 orange, aqua, yellow; adjacent CVD $\Delta E\geq9$ in both light and dark mode, checked with a palette
 validator), magnitudes use a one-hue blue ramp, alert states use reserved status colours always paired with an
 icon and a label; suppressed cells are hatched and shown as ``$<$5''; every forecast carries its bands; every
-panel shows its data-freshness date and a banner states that the data are synthetic and which public inputs used a
-fallback. \textbf{Mobile and playback (\req{VIS-7}).} The grid collapses to one column below 1{,}100\,px and a
+panel shows its data-freshness date and a banner states that the data are synthetic, the provenance of the
+public inputs and until when the weather is observed rather than climatology. \textbf{Mobile and playback (\req{VIS-7}).} The grid collapses to one column below 1{,}100\,px and a
 ``Play spread'' button animates weekly incidence over the last year. \textbf{Roles (\req{PRV-3}).} A district
 officer's token returns a bundle with their own district in detail and all other areas as division aggregates.
 A ``View as'' menu switches role in the local demo mode; \texttt{--secure} turns off automatic sign-in.
@@ -644,8 +672,8 @@ infrastructure; the same code scales out to a cluster or object store without ch
 \section{Limitations and Future Work}\label{sec:limits}
 (1) \emph{Synthetic data.} Outbreak shapes, delays and artefacts follow our own generator, so detection and
 forecast accuracy are optimistic; validation on historical DGHS surveillance data (e.g.\ the 2019 and 2023
-dengue seasons) is the first next step. In this build weather and population were synthetic fallbacks because the
-build machine could not reach Open-Meteo and HDX; the pipeline fetches the real data when run with internet access.
+dengue seasons) is the first next step. Weather after \WxObservedUntil{} is station climatology (end of the NOAA
+mirror), and three of six age bands use an assumed split; the census table and Open-Meteo can replace both.
 (2) \emph{Detection.} Weather-driven genuine rises (post-flood diarrhoea, early dengue seasons) count as false
 alerts against a ground truth that lists only injected outbreaks; a covariate-adjusted baseline (e.g.\ the
 forecast GLM's residuals) and Farrington-flexible \cite{farrington1996} are natural extensions; slow outbreaks
@@ -680,6 +708,8 @@ integration with DHIS2 APIs are future work.
 \bibitem{erl} T. Erl, W. Khattak, P. Buhler, \emph{Big Data Fundamentals}. Prentice Hall, 2016.
 \bibitem{opendengue} O. J. Brady et al., ``OpenDengue: data from the OpenDengue database,'' V1.3, 2024. [Online]. Available: https://opendengue.org
 \bibitem{codab} UN OCHA, ``Bangladesh -- Subnational Administrative Boundaries (COD-AB),'' HDX, v03, 2023.
+\bibitem{gsod} NOAA National Centers for Environmental Information, ``Global Surface Summary of the Day (GSOD),'' NOAA Open Data Dissemination (AWS \texttt{noaa-gsod-pds}), accessed 2026.
+\bibitem{hrsl} Facebook Connectivity Lab and CIESIN, ``High Resolution Settlement Layer (HRSL),'' Data for Good at Meta (AWS \texttt{dataforgood-fb-data}), CC BY 4.0, accessed 2026.
 \bibitem{openmeteo} P. Zippenfenig, ``Open-Meteo.com Weather API,'' Zenodo, 2023, doi:10.5281/zenodo.7970649.
 \end{thebibliography}
 

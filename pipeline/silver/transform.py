@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import io
 import json
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
@@ -77,7 +78,7 @@ def silver_population(spark: SparkSession, batch_id: str) -> None:
     raw = _bronze(spark, "public_population", batch_id)
     if raw is None or raw.limit(1).count() == 0:
         return
-    from generator.fetch_public import parse_cod_ps
+    from generator.fetch_public import HRSL_FILE, parse_cod_ps, parse_hrsl
 
     frames = []
     for r in raw.select("_file_name", "content").collect():
@@ -85,6 +86,9 @@ def silver_population(spark: SparkSession, batch_id: str) -> None:
         pdf = pd.read_csv(io.StringIO(text))
         if "SYNTHETIC_FALLBACK" in r._file_name:
             pdf["source_status"] = "synthetic_fallback"
+        elif r._file_name.endswith(HRSL_FILE):
+            pdf = parse_hrsl(pdf)
+            pdf["source_status"] = "real"
         else:
             if str(pdf.iloc[0, 0]).startswith("#"):
                 pdf = pdf.iloc[1:]
@@ -97,12 +101,18 @@ def silver_population(spark: SparkSession, batch_id: str) -> None:
 
 
 def silver_weather(spark: SparkSession, batch_id: str) -> None:
-    """S3: daily weather per district (parsed from raw Open-Meteo JSON or the labelled fallback CSV)."""
+    """S3: daily weather per district: raw NOAA GSOD station files interpolated to district centroids
+    (small reference data, so pandas is used), raw Open-Meteo JSON, or the labelled fallback CSV."""
     raw = _bronze(spark, "public_weather", batch_id)
     if raw is None or raw.limit(1).count() == 0:
         return
-    frames = []
-    for r in raw.select("_file_name", "content").collect():
+    from generator.fetch_public import districts, gsod_to_districts, read_gsod, weather_range
+
+    rows = raw.select("_file_name", "content").collect()
+    gsod = [(r._file_name, bytes(r.content)) for r in rows if Path(r._file_name).name.startswith("gsod_")]
+    rows = [r for r in rows if not Path(r._file_name).name.startswith("gsod_")]
+    frames = [gsod_to_districts(read_gsod(gsod), districts(), *weather_range())] if gsod else []
+    for r in rows:
         text = bytes(r.content).decode("utf-8")
         if r._file_name.endswith(".json"):
             p = json.loads(text)

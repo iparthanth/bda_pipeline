@@ -7,17 +7,21 @@ ingestion (ING-1) stores exactly what the provider returned, and re-runs do not 
 Resolution order per source (recorded in ``data/landing/public/provenance.json`` and shown on the
 dashboard, so a viewer always knows whether a series is real or synthetic):
 
-1. ``real``            - downloaded from the public provider in this run (or cached from a previous run);
-2. ``reference``       - small real snapshot committed under ``data/reference`` (boundaries, OpenDengue);
-3. ``synthetic_fallback`` - only when the provider is unreachable (offline sandbox). A loud warning is
-   printed, the provenance file says so and the dashboard shows a banner. Re-run with internet access
-   to replace it with real data.
+1. ``real`` (pinned)    - S2 and S3 come from real snapshots committed under ``data/reference`` (built by
+   ``generator/build_reference.py``). This is the default so that every clone generates exactly the same
+   synthetic epidemiology as the report, with or without internet access;
+2. ``real`` (download) - ``--refresh`` (or a missing snapshot) queries the providers below and caches the raw
+   responses; S1 and S7 are always downloaded when reachable and otherwise read from ``data/reference``;
+3. ``synthetic_fallback`` - only when neither is available. A loud warning is printed, the provenance file
+   says so and the dashboard shows a banner.
 
 Sources
 -------
 S1  OCHA COD-AB Bangladesh ADM2 (HDX, CC BY-IGO), v03 2023-05-21, pinned GitHub mirror of the GeoJSON.
-S2  OCHA COD-PS Bangladesh ADM2 population (HDX), derived from the BBS Population & Housing Census 2022.
-S3  Open-Meteo historical weather archive (CC BY 4.0), queried at district centroids.
+S2  pinned: Meta/CIESIN High Resolution Settlement Layer population (CC BY 4.0) aggregated to districts;
+    download: OCHA COD-PS Bangladesh ADM2 population (HDX), from the BBS Population & Housing Census 2022.
+S3  pinned: NOAA GSOD daily station observations (public domain, BMD synoptic stations), inverse-distance
+    weighted to district centroids; download: Open-Meteo historical weather archive (CC BY 4.0).
 S7  OpenDengue V1.3 national extract, SEARO (CC BY 4.0) - Bangladesh rows.
 """
 from __future__ import annotations
@@ -25,10 +29,13 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime as dt
+import gzip
+import shutil
 import io
 import json
 import sys
 import time
+import warnings
 import zipfile
 from pathlib import Path
 
@@ -139,9 +146,46 @@ def parse_cod_ps(raw: pd.DataFrame) -> pd.DataFrame:
     return df.groupby(["adm2_pcode", "age_band", "sex"], as_index=False)["population"].sum()
 
 
-def fetch_population(offline: bool) -> dict:
+HRSL_FILE = "population_hrsl_adm2.csv"
+# Assumptions for the age bands HRSL does not publish (documented in the report, S2): the remainder
+# (5-14 and 25-59) is split in these proportions, and 35% of the 60+ population is aged 60-64.
+HRSL_REMAINDER_SPLIT = {"5-14": 0.19, "25-44": 0.30, "45-64": 0.1275}
+HRSL_SHARE_60_64 = 0.35
+
+
+def parse_hrsl(raw: pd.DataFrame) -> pd.DataFrame:
+    """District HRSL layers -> (adm2_pcode, age_band, sex, population).
+
+    Real per district: total, men/women, under-5, 15-24 and 60+. The 5-14 / 25-44 / 45-64 split of the
+    remainder and the 60-64 share of the 60+ are the stated assumptions above; the sex ratio of each
+    district is applied to every band."""
+    rows = []
+    for r in raw.itertuples(index=False):
+        u5, youth, old = r.children_under_five, r.youth_15_24, r.elderly_60_plus
+        rest = max(r.population - u5 - youth - old, 0.0)
+        w = sum(HRSL_REMAINDER_SPLIT.values())
+        bands = {"0-4": u5, "15-24": youth, "65+": old * (1 - HRSL_SHARE_60_64)}
+        for band, share in HRSL_REMAINDER_SPLIT.items():
+            bands[band] = bands.get(band, 0.0) + rest * share / w
+        bands["45-64"] += old * HRSL_SHARE_60_64
+        male = r.men / (r.men + r.women) if (r.men + r.women) > 0 else 0.5
+        for band, v in bands.items():
+            rows += [(r.adm2_pcode, band, "M", v * male), (r.adm2_pcode, band, "F", v * (1 - male))]
+    return pd.DataFrame(rows, columns=["adm2_pcode", "age_band", "sex", "population"])
+
+
+def fetch_population(offline: bool, refresh: bool = False) -> dict:
     d = _public_dir("population")
-    cached = sorted(f for f in d.glob("*.csv") if not f.name.startswith("SYNTHETIC_FALLBACK"))
+    pinned = Path(path("reference")) / HRSL_FILE
+    if pinned.exists() and not refresh:
+        for f in d.glob("*.csv"):
+            if f.name != HRSL_FILE:
+                f.unlink()                      # one S2 file in the landing zone at a time
+        shutil.copyfile(pinned, d / HRSL_FILE)
+        src = json.loads((Path(path("reference")) / "population_hrsl_SOURCE.json").read_text())
+        return {"status": "real", "file": str(d / HRSL_FILE), "source": src["source"], "licence": src["licence"],
+                "url": src["url"], "note": "pinned snapshot in data/reference (generator/build_reference.py)"}
+    cached = sorted(f for f in d.glob("*.csv") if not f.name.startswith("SYNTHETIC_FALLBACK") and f.name != HRSL_FILE)
     if cached:
         return {"status": "real", "file": str(cached[0]), "note": "cached"}
     if not offline:
@@ -201,10 +245,100 @@ def weather_range() -> tuple[str, str]:
     return start, end.isoformat()
 
 
-def fetch_weather(offline: bool) -> dict:
+def _f_to_c(v: pd.Series) -> pd.Series:
+    return (v - 32.0) * 5.0 / 9.0
+
+
+def read_gsod(files: list[tuple[str, bytes]]) -> pd.DataFrame:
+    """Raw GSOD station files (name, bytes; gzip or plain) -> station-day table in SI units."""
+    frames = []
+    for name, content in files:
+        if name.endswith(".gz"):
+            content = gzip.decompress(content)
+        frames.append(pd.read_csv(io.BytesIO(content), dtype={"STATION": str}))
+    g = pd.concat(frames, ignore_index=True)
+    out = pd.DataFrame({"station": g["STATION"], "date": pd.to_datetime(g["DATE"]),
+                        "lat": g["LATITUDE"].astype(float), "lon": g["LONGITUDE"].astype(float)})
+    out["temp_c"] = _f_to_c(g["TEMP"].where(g["TEMP"] < 9000))
+    dew = _f_to_c(g["DEWP"].where(g["DEWP"] < 9000))
+    # relative humidity from temperature and dew point (Magnus formula)
+    a, b = 17.625, 243.04
+    out["rh"] = (100 * np.exp(a * dew / (b + dew)) / np.exp(a * out["temp_c"] / (b + out["temp_c"]))).clip(0, 100)
+    out["rain_mm"] = g["PRCP"].where(g["PRCP"] < 99) * 25.4
+    return out.drop_duplicates(["station", "date"])
+
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    p1, p2 = np.radians(lat1), np.radians(lat2)
+    dlat, dlon = p2 - p1, np.radians(lon2) - np.radians(lon1)
+    h = np.sin(dlat / 2) ** 2 + np.cos(p1) * np.cos(p2) * np.sin(dlon / 2) ** 2
+    return 6371.0 * 2 * np.arcsin(np.sqrt(h))
+
+
+def gsod_to_districts(st: pd.DataFrame, dist: pd.DataFrame, start: str, end: str,
+                      k: int = 4, radius_km: float = 150.0) -> pd.DataFrame:
+    """Inverse-distance-squared weighting of the k nearest stations with a valid value that day (within
+    ``radius_km``, else the nearest valid one). Days after the last observation (or with no valid station)
+    get the district day-of-year climatology of the same stations and ``source_status = climatology_fill``."""
+    days = pd.date_range(start, end, freq="D")
+    loc = st.groupby("station")[["lat", "lon"]].median()
+    D = _haversine_km(dist["center_lat"].to_numpy()[:, None], dist["center_lon"].to_numpy()[:, None],
+                      loc["lat"].to_numpy()[None, :], loc["lon"].to_numpy()[None, :])      # [district, station]
+    out = {}
+    for var in ("rain_mm", "temp_c", "rh"):
+        M = st.pivot(index="date", columns="station", values=var).reindex(index=days, columns=loc.index).to_numpy()
+        valid = np.isfinite(M)                                                            # [day, station]
+        res = np.full((len(days), len(dist)), np.nan)
+        for i in range(len(dist)):
+            order = np.argsort(D[i])
+            Vi, Mi = valid[:, order], M[:, order]
+            rank = np.cumsum(Vi, axis=1)                                                  # k nearest valid
+            use = Vi & (rank <= k) & ((D[i, order] <= radius_km)[None, :] | (rank == 1))
+            w = np.where(use, 1.0 / np.maximum(D[i, order], 1.0) ** 2, 0.0)
+            ws = w.sum(axis=1)
+            res[:, i] = np.where(ws > 0, np.nansum(np.where(use, Mi, 0.0) * w, axis=1) / np.where(ws > 0, ws, 1), np.nan)
+        out[var] = res
+    obs = np.isfinite(out["temp_c"]) & np.isfinite(out["rain_mm"])
+    doy = np.minimum(days.dayofyear.to_numpy(), 365)
+    for var, res in out.items():                                                          # climatology fill
+        clim = np.full((366, len(dist)), np.nan)
+        for d0 in range(1, 366):
+            win = (np.abs(doy - d0) <= 7) | (np.abs(doy - d0) >= 358)                     # +-7 days, wraps
+            with warnings.catch_warnings():                                               # all-NaN windows
+                warnings.simplefilter("ignore", RuntimeWarning)
+                clim[d0] = np.nanmean(np.where(obs[win], res[win], np.nan), axis=0)
+        fill = ~obs | ~np.isfinite(res)
+        res[fill] = clim[doy[:, None].repeat(len(dist), 1)[fill], np.nonzero(fill)[1]]
+    frames = []
+    for i, pc in enumerate(dist["adm2_pcode"]):
+        frames.append(pd.DataFrame({
+            "adm2_pcode": pc, "date": days.strftime("%Y-%m-%d"),
+            "precipitation_sum": out["rain_mm"][:, i].round(1), "temperature_2m_mean": out["temp_c"][:, i].round(1),
+            "relative_humidity_2m_mean": out["rh"][:, i].round(0),
+            "source_status": np.where(obs[:, i], "real", "climatology_fill")}))
+    return pd.concat(frames, ignore_index=True)
+
+
+def fetch_weather(offline: bool, refresh: bool = False) -> dict:
     d = _public_dir("weather")
     start, end = weather_range()
     dist = districts()
+    pinned = sorted((Path(path("reference")) / "gsod").rglob("*.csv.gz"))
+    if pinned and not refresh:
+        for f in d.glob("*"):
+            f.unlink()                          # one S3 source in the landing zone at a time
+        for f in pinned:                        # unmodified station files -> bronze (ING-1)
+            shutil.copyfile(f, d / f"gsod_{f.parent.name}_{f.name}")
+        st = read_gsod([(f.name, f.read_bytes()) for f in pinned])
+        last = st.loc[st["temp_c"].notna(), "date"].max().date().isoformat()
+        src = json.loads((Path(path("reference")) / "gsod" / "SOURCE.json").read_text())
+        return {"status": "real", "dir": str(d), "source": src["source"], "licence": src["licence"], "url": src["url"],
+                "stations": int(st["station"].nunique()), "range": [start, end], "observed_until": last,
+                "note": f"station observations interpolated to district centroids; days after {last} "
+                        "(end of the NOAA mirror) use the stations' day-of-year climatology (source_status "
+                        "= climatology_fill)"}
+    for f in d.glob("gsod_*"):
+        f.unlink()                              # --refresh replaces the pinned station files
     ok, failed = 0, 0
     if not offline:
         for _, r in dist.iterrows():
@@ -277,6 +411,10 @@ def fetch_opendengue(offline: bool) -> dict:
 def load_weather_daily() -> pd.DataFrame:
     """Parsed daily weather per district (adm2_pcode, date, precipitation_sum, temperature_2m_mean, ...)."""
     d = _public_dir("weather")
+    gsod = sorted(d.glob("gsod_*.csv.gz"))
+    if gsod:
+        start, end = weather_range()
+        return gsod_to_districts(read_gsod([(f.name, f.read_bytes()) for f in gsod]), districts(), start, end)
     files = sorted(d.glob("open_meteo_*.json"))
     if len(files) == len(districts()):
         frames = []
@@ -292,6 +430,8 @@ def load_weather_daily() -> pd.DataFrame:
 def load_population() -> pd.DataFrame:
     prov = json.loads((Path(path("landing")) / "public" / "provenance.json").read_text())
     f = Path(prov["S2_population"]["file"])
+    if f.name == HRSL_FILE:
+        return parse_hrsl(pd.read_csv(f))
     if prov["S2_population"]["status"] == "real":
         raw = pd.read_csv(f, encoding_errors="replace")
         if str(raw.iloc[0, 0]).startswith("#"):
@@ -311,11 +451,13 @@ def load_opendengue_monthly() -> pd.DataFrame:
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--offline", action="store_true", help="skip network calls (use cache/reference/fallback)")
+    ap.add_argument("--refresh", action="store_true",
+                    help="ignore the pinned S2/S3 snapshots and download from HDX / Open-Meteo instead")
     args = ap.parse_args(argv)
     prov = {
         "S1_boundaries": fetch_boundaries(args.offline),
-        "S2_population": fetch_population(args.offline),
-        "S3_weather": fetch_weather(args.offline),
+        "S2_population": fetch_population(args.offline, args.refresh),
+        "S3_weather": fetch_weather(args.offline, args.refresh),
         "S7_opendengue": fetch_opendengue(args.offline),
         "generated_at": _now(),
     }

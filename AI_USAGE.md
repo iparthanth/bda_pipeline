@@ -31,6 +31,8 @@ able to explain the parts of the system they present and sign off in Appendix B 
    documented in the code comments and in the report, Section 6)
 3. "The optimiser returns a zero budget - why?" (stock levels in the generator were unrealistically high; fixed)
 4. "Make the dashboard exports pass the small-cell suppression audit, including totals."
+5. "The dashboard must run with one command without tokens for the teacher - check the brief." and "Again check
+   step by step every instruction, if anything is left to fulfil." (the re-audit that found the items listed below)
 
 ## Things the AI got wrong that we caught and fixed (keep this list honest)
 
@@ -45,6 +47,15 @@ able to explain the parts of the system they present and sign off in Appendix B 
 - A proposed small-file compaction experiment turned out to be invalid (the copied table had no small files) and was
   replaced by the columnar-storage experiment; a claimed caching speed-up was not supported by the measurements and
   was removed from the report.
+- The first handed-over results used the labelled synthetic fallback for population and weather because the build
+  environment could not reach Open-Meteo or HDX; a re-audit against the brief caught this, and S2/S3 were replaced by
+  pinned real snapshots (NOAA GSOD, Meta/CIESIN HRSL) and every result regenerated.
+- The report stated 21 Must / 11 Should / 5 Could requirements; the brief has 23 / 9 / 4 (corrected).
+- ING-7 was claimed although Delta time travel was never actually read; `orchestration/inspect_lake.py asof` now uses it.
+- The dashboard first required copying an access token, which made the one-command run (H1) awkward for a marker;
+  it now opens signed in, with the role restriction kept on the server.
+- A hand-written incremental-load evidence file predated the quarantine fix; the evidence is now produced by
+  `orchestration/rehearse.py`.
 
 ## Limits of AI use
 
