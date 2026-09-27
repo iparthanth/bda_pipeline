@@ -4,7 +4,8 @@
 #   make setup                 create .venv and install the pinned requirements
 #   make all                   setup + env + full pipeline (SF from config/episcope.yaml, default 1.0)
 #   make all SF=0.25           same at a smaller scale factor
-#   make serve                 start the dashboard at http://127.0.0.1:8765 (prints role login links)
+#   make serve                 start the dashboard at http://127.0.0.1:8765 and open it (signs in automatically;
+#                              ARGS=--secure requires a role token instead)
 #   make drop DROP=path/dir    ingest an incremental drop (e.g. the hidden 14-day test drop) and refresh everything
 #   make incremental           ingest the generator's first future day (demo of ING-4) and refresh
 #   make stream                near-real-time path (ING-6): Structured Streaming over data/stream_inbox
@@ -41,7 +42,7 @@ all: setup env
 	$(PY) -m orchestration.dag all $(SFARG) $(if $(OFFLINE),--offline,)
 
 serve: setup env
-	$(PY) -m serving.server
+	$(PY) -m serving.server $(ARGS)
 
 drop: setup env
 	@test -n "$(DROP)" || (echo "usage: make drop DROP=/path/to/drop_folder" && exit 2)

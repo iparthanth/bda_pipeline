@@ -1,28 +1,26 @@
 # One command: `docker compose up` builds the lake, analytics and dashboard data, then serves the dashboard
-# at http://localhost:8765 (login links are printed in the `dashboard` service log).
+# at http://localhost:8765 (opens signed in as the national role; "View as" switches to a district role).
+# Smaller/faster run: `SF=0.02 docker compose up` (PowerShell: `$env:SF="0.02"; docker compose up`).
 # Optional S3-compatible storage (ING-5): `docker compose --profile minio up` and set
 # EPISCOPE__PATHS__LAKE_ROOT=s3a://episcope/lake in .env.
 services:
   pipeline:
     build: .
     image: episcope:1.0
+    # init_env creates .env (random salt + role tokens) in the project folder on the first run
     command: ["sh", "-c", "python -m orchestration.init_env && python -m orchestration.dag all"]
-    env_file: [.env]
     environment:
       - EPISCOPE__SPARK__DRIVER_MEMORY=${SPARK_DRIVER_MEMORY:-6g}
+      - EPISCOPE__GENERATOR__SCALE_FACTOR=${SF:-1.0}
     volumes:
-      - ./data:/app/data
-      - ./serving/out:/app/serving/out
-      - ./.env:/app/.env
+      - ./:/app          # the project folder: code, .env, data/ and serving/out/ are shared with the host
     mem_limit: 12g
   dashboard:
     image: episcope:1.0
-    command: ["python", "-m", "serving.server", "--host", "0.0.0.0", "--port", "8765"]
-    env_file: [.env]
-    ports: ["8765:8765"]
+    command: ["python", "-m", "serving.server", "--host", "0.0.0.0", "--port", "8765", "--no-browser"]
+    ports: ["127.0.0.1:8765:8765"]   # local only: demo mode signs the browser in automatically
     volumes:
-      - ./serving/out:/app/serving/out:ro
-      - ./data/runs:/app/data/runs
+      - ./:/app
     depends_on:
       pipeline:
         condition: service_completed_successfully

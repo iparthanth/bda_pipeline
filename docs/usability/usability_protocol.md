@@ -7,7 +7,7 @@ Record the real results in the table at the end and summarise them in report Sec
 ## Set-up (20-25 min per participant)
 1. Consent: explain that the data are synthetic, no personal data about the participant are recorded except
    their background (e.g. "public-health student"), and they can stop at any time.
-2. Laptop with `make serve` running, national login; screen + audio recording only with consent.
+2. Laptop with `run_dashboard.bat` / `make serve` running (opens signed in as national); screen + audio recording only with consent.
 3. Think-aloud: ask the participant to say what they are looking for and what they expect.
 
 ## Tasks (measure success, time, errors)

@@ -30,6 +30,7 @@
     <label>Disease <select id="sel-disease"></select></label>
     <label>Area <select id="sel-area"></select></label>
     <label>Resource <select id="sel-resource"></select></label>
+    <label hidden>View as <select id="sel-role" aria-label="View the dashboard as a role (PRV-3)"></select></label>
     <button id="btn-reset" type="button">Reset selection</button>
     <button id="btn-theme" type="button" aria-label="Toggle dark mode">◐</button>
   </div>
@@ -40,8 +41,9 @@
 
 <section id="login" class="login" hidden>
   <h2>Sign in</h2>
-  <p>Paste the access token for your role (national or district). Tokens are issued by the Ministry's data team
-    (<code>.env</code> after <code>make env</code> in this prototype; <code>make serve</code> prints ready-made links).</p>
+  <p>This server runs in secure mode. Paste the access token for your role (national or district); in this
+    prototype the tokens are in <code>.env</code> and <code>make serve ARGS=--secure</code> prints ready-made links.
+    Without <code>--secure</code> the dashboard signs in automatically.</p>
   <form id="login-form"><input id="token" type="password" autocomplete="off" placeholder="access token" aria-label="Access token">
     <button type="submit">Open dashboard</button></form>
   <p id="login-error" class="error"></p>

@@ -571,7 +571,8 @@ Scenario & Reported & Peak wk & Peak & Averted\\\midrule
 % ================================================================================================ 7
 \section{Dashboard Design and Usability}\label{sec:vis}
 The dashboard (\req{VIS-1}) is plain HTML with D3.js v7 and topojson-client, vendored so it runs offline, and is
-started with one command (\texttt{make serve}). Fig.~\ref{fig:dash} shows the national view.
+started with one command (\texttt{run\_dashboard.bat}, \texttt{./run\_dashboard.sh} or \texttt{make serve}), which
+opens the browser already signed in. Fig.~\ref{fig:dash} shows the national view.
 
 \textbf{Coordinated views (\req{VIS-2}, \req{VIS-3}).} (1) District choropleth of mean weekly incidence per
 100{,}000 over the selected weeks with alert markers; (2) focus+context time series with the reported counts,
@@ -604,6 +605,7 @@ panel shows its data-freshness date and a banner states that the data are synthe
 fallback. \textbf{Mobile and playback (\req{VIS-7}).} The grid collapses to one column below 1{,}100\,px and a
 ``Play spread'' button animates weekly incidence over the last year. \textbf{Roles (\req{PRV-3}).} A district
 officer's token returns a bundle with their own district in detail and all other areas as division aggregates.
+A ``View as'' menu switches role in the local demo mode; \texttt{--secure} turns off automatic sign-in.
 
 \textbf{Usability check.} \todo{The protocol in \texttt{docs/usability/usability\_protocol.md} (six tasks, think-aloud,
 System Usability Scale) must be run with at least two non-CS users; insert their results and the changes made here.}

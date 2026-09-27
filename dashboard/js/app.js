@@ -17,6 +17,16 @@ const VIEWS = [map, ts, heat, table, whatif, alloc, cal, seir, dq, evaluation];
 
 function storage(fn, fallback = null) { try { return fn(); } catch { return fallback; } }
 
+// Demo mode (server default): the local server lists its roles so the dashboard can sign in as national
+// automatically and offer a "View as" switcher. With `--secure` the endpoint is off and a token is required.
+let demoRoles = [];
+async function loadDemoRoles() {
+  try {
+    const r = await fetch("/api/demo-roles");
+    demoRoles = r.ok ? await r.json() : [];
+  } catch { demoRoles = []; }
+}
+
 async function getToken() {
   const m = location.hash.match(/token=([^&]+)/);
   if (m) {
@@ -24,7 +34,23 @@ async function getToken() {
     history.replaceState(null, "", location.pathname);  // do not leave the token in the address bar
     return m[1];
   }
-  return storage(() => sessionStorage.getItem("episcope_token"));
+  const saved = storage(() => sessionStorage.getItem("episcope_token"));
+  if (saved && (!demoRoles.length || demoRoles.some((r) => r.token === saved))) return saved;
+  return demoRoles.length ? demoRoles[0].token : null;  // national first
+}
+
+function roleSwitcher(token) {
+  const sel = document.getElementById("sel-role");
+  if (!demoRoles.length) { sel.parentElement.hidden = true; return; }
+  sel.parentElement.hidden = false;
+  const label = (r) => (r.scope === "national" ? "National (all districts)"
+    : `District officer - ${store.areaName(r.district_pcode)}`);
+  d3.select(sel).selectAll("option").data(demoRoles).join("option")
+    .attr("value", (r) => r.token).text(label).property("selected", (r) => r.token === token);
+  sel.onchange = (e) => {
+    storage(() => sessionStorage.setItem("episcope_token", e.target.value));
+    location.reload();
+  };
 }
 
 async function api(name, token) {
@@ -55,6 +81,7 @@ export const store = {
 };
 
 async function start() {
+  await loadDemoRoles();
   const token = await getToken();
   if (!token) return showLogin();
   let data;
@@ -89,6 +116,7 @@ async function start() {
   const shipped = d3.rollup(data.allocation.rows, (v) => d3.sum(v, (r) => r.recommended), (r) => r.resource);
   if (shipped.size) store.state.resource = [...shipped.entries()].sort((a, b) => b[1] - a[1])[0][0];
   controls(data);
+  roleSwitcher(token);
   document.getElementById("app").hidden = false;
   VIEWS.forEach((v) => v.init(store));
   store.bus.on("change.views", (s) => { syncControls(s); VIEWS.forEach((v) => v.update(store)); });

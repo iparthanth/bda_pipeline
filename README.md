@@ -17,7 +17,7 @@ Group [GROUP NUMBER]: [MEMBER 1 NAME, ID] · [MEMBER 2 NAME, ID] · [MEMBER 3 NA
 
 | Need | Version | Notes |
 |---|---|---|
-| Linux / macOS / WSL2 | - | 16 GB RAM, 4 cores, ~15 GB free disk for SF = 1 |
+| Linux / macOS / WSL2 (or Docker on Windows) | - | 16 GB RAM, 4 cores, ~15 GB free disk for SF = 1; viewing the dashboard (2a) works on any OS |
 | Python | 3.11 | `python3 -m venv` available |
 | Java | **17** | Spark 3.5 supports Java 8/11/17 (not 21). The Makefile picks Java 17 automatically if installed |
 | make | any | |
@@ -29,24 +29,48 @@ topojson-client 3.1.0 are vendored in `dashboard/vendor/` (no CDN needed).
 
 ## 2. One-command run (ENG-1)
 
+### 2a. See the dashboard now (no Spark, no Java - about 1 minute)
+The exported dashboard data (`serving/out/`, small-cell suppressed) is committed, so the dashboard runs straight
+from a clean clone. **One command**, with only Python 3.9+ installed:
+
+| Platform | Command |
+|---|---|
+| Windows | double-click **`run_dashboard.bat`** (or run it from a terminal) |
+| macOS / Linux / Git Bash | `./run_dashboard.sh` |
+| with `make` / `npm` | `make serve` · `npm run serve` (after `pip install pyyaml` or `make setup`) |
+
+The script creates `.venv`, installs PyYAML (the server's only dependency), creates `.env` with a random salt and
+role tokens on first run, starts the server at **http://127.0.0.1:8765** and **opens the browser, already signed
+in as the national role** - no token to copy. Close the window (or Ctrl+C) to stop.
+
+### 2b. Rebuild everything from scratch (lake, analytics and dashboard data)
 ```bash
 git clone <repo-url> episcope && cd episcope
-make all          # venv + .env (random salt/tokens) + public data + generator (SF=1) + lake + analytics + dashboard data
-make serve        # dashboard at http://127.0.0.1:8765 - the command prints a login link per role
+make all          # venv + .env + public data + generator (SF=1) + bronze/silver/gold lake + analytics + dashboard data
+make serve        # then open the dashboard as in 2a
+```
+or, with only Docker installed (brings its own Python 3.11 and Java 17):
+```bash
+docker compose up                    # full run, then the dashboard at http://localhost:8765
+SF=0.02 docker compose up            # quick run (PowerShell: $env:SF="0.02"; docker compose up)
 ```
 
 `make all SF=0.25` runs a smaller scale factor. `make all` at SF = 1 (28.2 M encounter rows) took 22.5 min on a
-4-vCPU / 15 GB machine (per-stage times for SF 0.25 / 0.5 / 1 in `docs/experiments/scaling.csv`); the limit is 45 min. Docker alternative:
-`docker compose up` (pipeline, then dashboard on port 8765).
+4-vCPU / 15 GB machine (per-stage times for SF 0.25 / 0.5 / 1 in `docs/experiments/scaling.csv`); the limit is 45 min.
+On native Windows, use Docker or WSL2 for 2b (Spark needs Hadoop's `winutils` on Windows).
 
 Other targets: `make test` (automated tests), `make incremental` (ingest the first future daily drop),
 `make stream` (near-real-time path), `make scale` (ENG-2 experiment), `make optimisations` (ENG-3),
 `make report` (rebuild the report PDF from the latest results).
 
-### Dashboard login (PRV-3)
-Tokens live only in the git-ignored `.env` (created by `make env`/`make all`). `make serve` prints links such as
-`http://127.0.0.1:8765/#token=...` for the **national** role (all districts in detail) and three **district**
-roles (own district in detail, all other areas only as division aggregates). Every data request is logged in
+### Role-based views (PRV-3)
+The server checks a role token on every data request and serves each role only its own bundle: **national**
+(all districts in detail) or one of three **district** roles (own district in detail, all other areas only as
+division aggregates). For marking and the video the server starts in **demo mode**: the local browser is signed
+in as national automatically and a **"View as"** menu (top right) switches to a district officer's view, so the
+restriction can be seen without handling tokens. `make serve ARGS=--secure` (or `python -m serving.server
+--secure`) is the deployment mode: no automatic sign-in, and the dashboard asks for a token (the command prints a
+link per role; tokens live only in the git-ignored `.env`). Every data request is logged in
 `data/runs/access_audit.log`.
 
 ## 3. Running the hidden 14-day test drop

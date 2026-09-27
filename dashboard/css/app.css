@@ -42,6 +42,7 @@ h2 { font-size: 14px; margin: 0; font-weight: 600; }
 .brand .subtitle { color: var(--text-secondary); font-size: 12px; margin-left: 8px; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .controls label { color: var(--text-secondary); font-size: 12px; display: flex; gap: 4px; align-items: center; }
+[hidden] { display: none !important; }
 select, button, input[type=password] { font: inherit; color: var(--text-primary); background: var(--surface-2);
   border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; min-height: 32px; }
 button { cursor: pointer; }
