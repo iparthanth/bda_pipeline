@@ -115,9 +115,9 @@ def main(argv: list[str] | None = None) -> None:
         raise SystemExit("No role tokens configured - run `make env` first (creates .env with random tokens).")
     if not (BUNDLES / "national").exists():
         raise SystemExit("No exported data in serving/out - run `make all` (or `python -m serving.export`).")
-    print(f"EpiScope dashboard: http://{args.host}:{args.port}/")
+    print(f"EpiScope dashboard: http://{args.host}:{args.port}/", flush=True)
     for tok, r in Handler.roles.items():
-        print(f"  {r['role']:22s} -> http://{args.host}:{args.port}/#token={tok}")
+        print(f"  {r['role']:22s} -> http://{args.host}:{args.port}/#token={tok}", flush=True)
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
 
 
