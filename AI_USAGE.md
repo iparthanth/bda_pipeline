@@ -54,6 +54,9 @@ able to explain the parts of the system they present and sign off in Appendix B 
 - ING-7 was claimed although Delta time travel was never actually read; `orchestration/inspect_lake.py asof` now uses it.
 - The dashboard first required copying an access token, which made the one-command run (H1) awkward for a marker;
   it now opens signed in, with the role restriction kept on the server.
+- The detection operating-point rule broke sensitivity ties by fewer false alerts, which on a sensitivity plateau
+  drifted to the highest (slowest) threshold; after the real-data rebuild this was noticed and the tie-break changed
+  to shorter median delay (documented in the report, Section 2) - a rule change made after seeing results.
 - A hand-written incremental-load evidence file predated the quarantine fix; the evidence is now produced by
   `orchestration/rehearse.py`.
 

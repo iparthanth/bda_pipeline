@@ -33,8 +33,10 @@ from pipeline.common.spark import get_spark
 OUT = REPO_ROOT / "docs" / "experiments"
 
 
-def snapshot(spark) -> dict:
+def snapshot(_spark=None) -> dict:
     from delta.tables import DeltaTable
+
+    spark = get_spark("rehearse")
 
     spark.catalog.clearCache()
     enc = spark.read.format("delta").load(lake("silver", "encounters"))
@@ -48,7 +50,17 @@ def snapshot(spark) -> dict:
             .agg(F.max("version")).first()[0]}
 
 
+def _release() -> None:
+    """Stop this process's Spark session before a subprocess starts its own (two 6 GB JVMs do not fit in 16 GB)."""
+    from pipeline.common import spark as sp
+
+    if sp._SESSION is not None:
+        sp._SESSION.stop()
+        sp._SESSION = None
+
+
 def _py(*args: str) -> tuple[float, str]:
+    _release()
     t = time.time()
     p = subprocess.run([sys.executable, "-m", *args], cwd=REPO_ROOT, capture_output=True, text=True)
     if p.returncode != 0:
@@ -68,7 +80,7 @@ def _dag_drop(source: str) -> tuple[dict, dict]:
 
 
 def main() -> int:
-    spark = get_spark("rehearse")
+    spark = None
     drops = sorted(p for p in Path(path("drops")).iterdir() if p.is_dir())
     first = str(drops[0])
 
@@ -124,7 +136,7 @@ def main() -> int:
     # 3. time travel: what did the lake know before the rehearsal drop?
     from orchestration.inspect_lake import asof
 
-    tt = asof(spark, version=pre["gold_weekly_version"])
+    tt = asof(get_spark("rehearse"), version=pre["gold_weekly_version"])
     tt["description"] = ("gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current "
                          "version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from "
                          "gold.reporting_triangle, the backtest's method, at weekly resolution (it also counts the "

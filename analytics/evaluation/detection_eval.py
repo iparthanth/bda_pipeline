@@ -122,11 +122,13 @@ def artefact_check(det: pd.DataFrame, art: pd.DataFrame, method: str, thr: float
 
 def choose_operating_point(curve: pd.DataFrame, max_fa: float) -> dict:
     """C1 rule: highest local sensitivity with <= max_fa false alerts per district-year (guarded variant);
-    ties broken by fewer false alerts, then shorter median delay."""
+    ties broken by shorter median delay, then fewer false alerts. (Breaking ties by fewer false alerts first
+    would always drift to the highest threshold on a sensitivity plateau - the slowest detector - although
+    every tied threshold already respects the alert budget.)"""
     c = curve[(curve.variant == "guarded") & (curve.false_alerts_per_district_year <= max_fa)]
     if c.empty:
         c = curve[curve.variant == "guarded"].nsmallest(1, "false_alerts_per_district_year")
-    best = c.sort_values(["sensitivity_local", "false_alerts_per_district_year", "median_delay_local"],
+    best = c.sort_values(["sensitivity_local", "median_delay_local", "false_alerts_per_district_year"],
                          ascending=[False, True, True]).iloc[0]
     return {"method": best.method, "threshold": float(best.threshold), "rule": f"max sensitivity s.t. FA/district-year <= {max_fa}"}
 

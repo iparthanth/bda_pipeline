@@ -172,8 +172,10 @@ epidemiology, where we had to learn surveillance statistics, reporting delays an
 \textbf{C1 sensitivity vs.\ specificity.} We evaluated four detectors over a threshold grid against the
 ground-truth file (which the detector never reads) and chose the operating point \OpMethod{}\,$\geq$\,\OpThreshold{}
 with the rule ``highest sensitivity with at most three false alert events per district-year over the four
-diseases'' -- fewer than one per disease per year, a workload a district officer can verify by phone
-(Section~\ref{sec:evdet}). \textbf{C2 granularity vs.\ privacy.} Upazila maps would be more
+diseases'' -- fewer than one per disease per year, a workload a district officer can verify by phone --
+with ties on sensitivity broken by the shorter median delay (breaking them by fewer alerts would always pick
+the slowest threshold on a plateau, although every tied threshold already meets the budget;
+Section~\ref{sec:evdet}). \textbf{C2 granularity vs.\ privacy.} Upazila maps would be more
 actionable but 1--4-case cells identify people; we publish district$\times$epi-week counts with primary and
 complementary suppression, and only aggregates for districts a user is not responsible for.
 \textbf{C3 efficiency vs.\ equity.} The equity floor $\alpha$ guarantees each district at least $\alpha$ times its
@@ -181,10 +183,12 @@ population share of every resource shipped; the curve in Section~\ref{sec:evopt}
 \textbf{C4 freshness vs.\ cost.} Allocation and forecasting decisions are weekly and reporting delay is days,
 so a daily incremental batch is the main cadence; a Structured Streaming path refreshes alerts within five
 minutes for emergencies at the cost of a long-running process. \textbf{C5 accuracy vs.\ interpretability.}
-The pooled gradient-boosting model is slightly more accurate one to three weeks ahead (relative WIS
-\HgbRelWISOne{} vs \GlmRelWISOne{} at one week) but not at four weeks, and over-covers its intervals; the
-per-district GLM, whose coefficients (lagged rain, temperature, last season) officials can read and challenge,
-is within about 10\% and is the operational model, with the boosted model kept as a monitored challenger.
+The pooled gradient-boosting model is more accurate at every horizon (relative WIS \HgbRelWISOne{} vs
+\GlmRelWISOne{} at one week, \HgbRelWISFour{} vs \GlmRelWISFour{} at four), but its 80\% intervals over-cover
+(\HgbCovOne{}), i.e.\ they are wider than needed, and it gives no per-district explanation. We keep the per-district
+GLM, whose coefficients (lagged rain, temperature, last season) officials can read and challenge and whose intervals
+are calibrated (\GlmCovOne{}), as the operational model, and run the boosted model as a monitored challenger whose
+point forecasts are shown to analysts; this trades some accuracy for trust, the explicit C5 choice.
 
 % ================================================================================================ 3
 \section{Architecture and Design Decisions}\label{sec:arch}
@@ -256,7 +260,7 @@ Table format & Delta Lake & plain Parquet (no MERGE/time travel); Iceberg (heavi
 Storage & local FS / MinIO & HDFS in Docker (more RAM on a laptop)\\
 Orchestration & Makefile + DAG runner & Airflow/Prefect (services and memory for a 6-task DAG)\\
 Detection & CUSUM on historical limits & Farrington flexible (needs years of clean baseline per series; slower)\\
-Forecast & per-district NB GLM & pooled HGB (less accurate here, opaque); ARIMA (no count noise, weather lags awkward)\\
+Forecast & per-district NB GLM & pooled HGB (more accurate, opaque, over-wide intervals: challenger); ARIMA (no count noise, weather lags awkward)\\
 Optimiser & SciPy HiGHS MILP & PuLP/CBC (extra binary); heuristics (no optimality guarantee)\\
 Serving & stdlib server + static JSON & database-backed API (not needed for $<$10\,MB of aggregates)\\\bottomrule
 \end{tabular}\end{table}
@@ -487,9 +491,10 @@ and \HgbMAEOne{} for pooled boosting; its WIS is \GlmRelWISOne{} of the baseline
 \GlmRelWISFour{} at four weeks, and 80\% intervals cover \GlmCovOne{} (h\,=\,1) and \GlmCovFour{} (h\,=\,4) of
 outcomes, close to the nominal 80\% (seasonal naive: \BaseCovOne{}). Skill decays with horizon as expected;
 the largest gains are for ILI and dengue, whose weather-driven and multi-year patterns the naive method cannot
-follow. The pooled boosted model is slightly better one to three weeks ahead (relative WIS \HgbRelWISOne{} at
-$h=1$) but its intervals over-cover (too wide) and it loses the advantage at four weeks; given a difference of
-about 10\% we keep the GLM, whose coefficients can be shown to officials (C5), and log the challenger for review.
+follow. The pooled boosted model is more accurate at all horizons (relative WIS \HgbRelWISOne{} at $h=1$,
+\HgbRelWISFour{} at $h=4$), because it shares information across districts, but its intervals over-cover
+(\HgbCovOne{} at $h=1$) and it cannot be explained district by district; we keep the GLM for decisions (C5) and
+log the challenger, whose accuracy advantage is the main argument for a hierarchical model in future work.
 
 \begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
 \caption{Backtest (last 52 weeks): MAE, 80\% coverage, WIS relative to seasonal naive}\label{tab:fc}

@@ -107,6 +107,8 @@ def main() -> None:
     m.update(GlmRelWISOne=_fmt(allm.loc[("glm_nb", 1), "relative_wis_vs_baseline"], 2),
              GlmRelWISFour=_fmt(allm.loc[("glm_nb", 4), "relative_wis_vs_baseline"], 2),
              HgbRelWISOne=_fmt(allm.loc[("hgb_global", 1), "relative_wis_vs_baseline"], 2),
+             HgbRelWISFour=_fmt(allm.loc[("hgb_global", 4), "relative_wis_vs_baseline"], 2),
+             HgbCovOne=_pct(allm.loc[("hgb_global", 1), "coverage80"]), HgbCovFour=_pct(allm.loc[("hgb_global", 4), "coverage80"]),
              GlmCovOne=_pct(allm.loc[("glm_nb", 1), "coverage80"]), GlmCovFour=_pct(allm.loc[("glm_nb", 4), "coverage80"]),
              BaseCovOne=_pct(allm.loc[("seasonal_naive", 1), "coverage80"]),
              GlmMAEOne=_fmt(allm.loc[("glm_nb", 1), "mae"]), BaseMAEOne=_fmt(allm.loc[("seasonal_naive", 1), "mae"]),
