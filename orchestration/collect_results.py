@@ -69,9 +69,9 @@ def main() -> None:
             m[f"Art{key}{var.capitalize()}"] = str(int(r.alert_days.iloc[0])) if len(r) else "--"
     curve = pd.read_csv(out / "detection_tradeoff.csv")
     g = curve[curve.variant == "guarded"]
-    # comparison at a similar alert burden (<= 3.5 false alerts per district-year) and CUSUM delay at 10-20
+    # comparison at a similar alert burden (<= 4 false alerts per district-year) and CUSUM delay at 10-20
     for meth, key in (("ears_c1", "EarsCOne"), ("ears_c2", "EarsCTwo"), ("ears_c3", "EarsCThree"), ("cusum", "Cusum")):
-        low = g[(g.method == meth) & (g.false_alerts_per_district_year <= 3.5)]
+        low = g[(g.method == meth) & (g.false_alerts_per_district_year <= 4.0)]
         m[f"{key}SensLowFA"] = _pct(low.sensitivity_local.max()) if len(low) else "--"
     hi = g[(g.method == "cusum") & g.false_alerts_per_district_year.between(10, 20)]
     m["CusumDelayHighFA"] = (f"{int(hi.median_delay_local.min())}--{int(hi.median_delay_local.max())}"

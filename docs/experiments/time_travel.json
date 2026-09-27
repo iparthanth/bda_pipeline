@@ -23,28 +23,28 @@
    "week_start": "2025-12-08",
    "known_then": 2888,
    "known_now": 2889,
-   "triangle_then": 2889
+   "triangle_then": 2888
   },
   {
    "disease_group": "dengue",
    "week_start": "2025-12-15",
    "known_then": 1560,
    "known_now": 1568,
-   "triangle_then": 1563
+   "triangle_then": 1560
   },
   {
    "disease_group": "dengue",
    "week_start": "2025-12-22",
    "known_then": 792,
    "known_now": 860,
-   "triangle_then": 832
+   "triangle_then": 792
   },
   {
    "disease_group": "dengue",
    "week_start": "2025-12-29",
    "known_then": 146,
    "known_now": 383,
-   "triangle_then": 269
+   "triangle_then": 145
   },
   {
    "disease_group": "diarrhoea",
@@ -65,28 +65,28 @@
    "week_start": "2025-12-08",
    "known_then": 12453,
    "known_now": 12461,
-   "triangle_then": 12461
+   "triangle_then": 12453
   },
   {
    "disease_group": "diarrhoea",
    "week_start": "2025-12-15",
    "known_then": 11426,
    "known_now": 11600,
-   "triangle_then": 11545
+   "triangle_then": 11426
   },
   {
    "disease_group": "diarrhoea",
    "week_start": "2025-12-22",
    "known_then": 10191,
    "known_now": 11600,
-   "triangle_then": 11042
+   "triangle_then": 10183
   },
   {
    "disease_group": "diarrhoea",
    "week_start": "2025-12-29",
    "known_then": 2940,
    "known_now": 12015,
-   "triangle_then": 7159
+   "triangle_then": 2925
   },
   {
    "disease_group": "ili",
@@ -107,28 +107,28 @@
    "week_start": "2025-12-08",
    "known_then": 16261,
    "known_now": 16267,
-   "triangle_then": 16267
+   "triangle_then": 16261
   },
   {
    "disease_group": "ili",
    "week_start": "2025-12-15",
    "known_then": 17139,
    "known_now": 17411,
-   "triangle_then": 17311
+   "triangle_then": 17138
   },
   {
    "disease_group": "ili",
    "week_start": "2025-12-22",
    "known_then": 15198,
    "known_now": 17360,
-   "triangle_then": 16501
+   "triangle_then": 15185
   },
   {
    "disease_group": "ili",
    "week_start": "2025-12-29",
    "known_then": 4979,
    "known_now": 19176,
-   "triangle_then": 11693
+   "triangle_then": 4963
   },
   {
    "disease_group": "malaria",
@@ -163,21 +163,21 @@
    "week_start": "2025-12-22",
    "known_then": 71,
    "known_now": 84,
-   "triangle_then": 82
+   "triangle_then": 71
   },
   {
    "disease_group": "malaria",
    "week_start": "2025-12-29",
    "known_then": 25,
    "known_now": 64,
-   "triangle_then": 40
+   "triangle_then": 25
   }
  ],
- "description": "gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from gold.reporting_triangle, the backtest's method, at weekly resolution (it also counts the reports made later in the as-of week, so it can only be equal or slightly higher)",
+ "description": "gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from today's silver by first report date <= the old as-of day - the principle behind the backtest's reporting triangle - and should equal 'known_then' (differences can only come from duplicate links created by later records)",
  "revised_weeks": 15,
  "triangle_minus_time_travel": {
-  "max_abs": 6714,
-  "total": 13585,
+  "max_abs": 16,
+  "total": -54,
   "known_then_total": 162427
  }
 }

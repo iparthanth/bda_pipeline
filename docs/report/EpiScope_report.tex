@@ -199,7 +199,7 @@ lists the main alternatives we considered.
 \begin{tikzpicture}[font=\footnotesize, box/.style={draw, rounded corners=2pt, align=center, minimum height=0.9cm, inner sep=3pt},
   src/.style={box, fill=gray!10, text width=2.3cm}, lay/.style={box, fill=blue!8, text width=2.9cm}, ana/.style={box, fill=orange!10, text width=2.4cm},
   arr/.style={-{Stealth[length=2mm]}, thick}]
-\node[src] (s1) {S1 COD-AB boundaries\\S2 BBS population};
+\node[src] (s1) {S1 COD-AB boundaries\\S2 HRSL population};
 \node[src, below=0.15cm of s1] (s3) {S3 NOAA GSOD weather\\S7 OpenDengue};
 \node[src, below=0.15cm of s3] (s4) {S4 encounters (25M+)\\S5 registry, S6 stock};
 \node[lay, right=0.7cm of s3, text width=2.6cm] (b) {\textbf{Bronze} (Delta)\\raw strings, batch-partitioned, SHA-256 manifest, ingestion metadata};
@@ -450,7 +450,7 @@ and flags \SensNRS{} of districts in the national surge (median \MedDelayNRS{} d
 facility, \ArtOnboardNaive{} vs \ArtOnboardGuarded{} at the operating point (at lower thresholds the new-facility
 flag routes such days to ``verify reporting'' instead of ``alert'').
 \textbf{Interpretation.} The seasonal CUSUM dominates the EARS family everywhere on the curve: at a comparable
-false-alert burden (at most 3.5 per district-year) EARS C1 finds \EarsCOneSensLowFA{}, C2 \EarsCTwoSensLowFA{} and C3
+false-alert burden (at most 4 per district-year) EARS C1 finds \EarsCOneSensLowFA{}, C2 \EarsCTwoSensLowFA{} and C3
 \EarsCThreeSensLowFA{} of local outbreaks, CUSUM \CusumSensLowFA{}. EARS compares a day with the previous week only, so every seasonal upswing and every post-flood spike looks
 anomalous; CUSUM compares with the same season in earlier years and accumulates small persistent excesses. The
 price is delay: \MedDelayLocal{} days at the operating point versus \CusumDelayHighFA{} days at thresholds that produce
@@ -513,9 +513,10 @@ Table~\ref{tab:equity} gives the efficiency--equity curve over six budgets. Rule
 leaves no district with a gap and nothing shipped, provided it costs at most 10\% extra weighted unmet demand
 against the purely efficient plan; at 60\% budget this gives $\alpha=\RecAlpha{}$ (loss \RecEffLoss{}\%,
 districts left with nothing \RecNothingZero{}$\rightarrow$\RecNothing{}).
-\textbf{Interpretation.} In this low-season snapshot (end of December) the shortfall is almost entirely ORS and
-IV saline; per taka, ORS protects about four times more patient-equivalents than IV saline, so the plan first
-closes ORS gaps everywhere, then IV saline where alerts or growth raise the weight. Population-proportional
+\textbf{Interpretation.} In this low-season snapshot (end of December) the shortfall is only ORS and IV saline
+(58\% and 42\% of its cost); per taka, ORS protects about four times more patient-equivalents than IV saline, so at
+60\% of the gap cost the plan spends the whole budget on ORS and ships no saline, which enters only from a budget of
+80\% of the gap, first where alerts or growth raise the weight. Population-proportional
 allocation spends the same money but ships saline and sachets to districts that already hold enough, which is
 why it meets less than half as much of the gap. Every extra step of $\alpha$ costs efficiency with diminishing
 equity gains (Table~\ref{tab:equity}); a small floor ($\alpha=\RecAlpha{}$) is enough to guarantee every
@@ -560,8 +561,8 @@ Adaptive query execution (skew-join handling, coalescing of the 32 shuffle parti
 we did not run a separate skew experiment.
 
 \begin{figure*}[t]\centering
-\includegraphics[width=0.49\textwidth,height=8cm,keepaspectratio]{spark_ui_broadcast_off.png}\hfill
-\includegraphics[width=0.49\textwidth,height=8cm,keepaspectratio]{spark_ui_broadcast_on.png}
+\includegraphics[width=0.49\textwidth,height=9.5cm,keepaspectratio]{spark_ui_broadcast_off.png}\hfill
+\includegraphics[width=0.49\textwidth,height=9.5cm,keepaspectratio]{spark_ui_broadcast_on.png}
 \caption{Spark UI (History Server, SQL tab) for the registry join on the SF\,=\,1 lake. Left: broadcast disabled --
 both sides are shuffled (Exchange) and sorted before a SortMergeJoin. Right: BroadcastHashJoin -- the small facility
 registry is broadcast and the encounters are joined where they are read, with no shuffle of the large side.}
