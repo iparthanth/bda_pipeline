@@ -6,7 +6,7 @@
     python -m orchestration.inspect_lake history       # Delta versions of silver/gold (ING-7)
     python -m orchestration.inspect_lake asof          # time travel: national weekly cases as known at an
                                                        # earlier Delta version vs now (ING-7), checked against
-                                                       # the reporting-triangle reconstruction used by the backtest
+                                                       # a rebuild from report dates (the backtest's principle)
     python -m orchestration.inspect_lake all
 
 ``make inspect WHAT=quarantine`` runs the same commands inside the project environment.
@@ -99,15 +99,18 @@ def asof(spark: SparkSession, version: int | None = None, n_weeks: int = 6) -> d
     weeks = [r.week_start for r in then.select("week_start").distinct().orderBy(F.desc("week_start")).limit(n_weeks).collect()]
     t = _national(then, weeks).withColumnRenamed("cases", "known_then")
     c = _national(now, weeks).withColumnRenamed("cases", "known_now")
-    # backtest reconstruction: cases by onset week that had been reported by the end of the as-of week
-    tri = spark.read.format("delta").load(lake("gold", "reporting_triangle"))
-    cut = F.date_trunc("week", F.lit(known_until)).cast("date")
-    r = (tri.where(F.col("report_week") <= cut).transform(lambda d: _national(d, weeks))
-         .withColumnRenamed("cases", "triangle_then"))
+    # reconstruction from report dates (the principle of the backtest's reporting triangle): today's silver,
+    # keeping only encounters first reported on or before the as-of day, duplicates of an episode excluded
+    enc = spark.read.format("delta").load(lake("silver", "encounters"))
+    links = spark.read.format("delta").load(lake("silver", "episode_links")).select("encounter_id")
+    r = (enc.where(F.col("disease_group").isin("dengue", "diarrhoea", "ili", "malaria")
+                   & (F.col("first_report_date") <= F.lit(known_until)))
+         .join(links, "encounter_id", "left_anti").withColumn("cases", F.lit(1))
+         .transform(lambda d: _national(d, weeks)).withColumnRenamed("cases", "triangle_then"))
     rows = (t.join(c, ["disease_group", "week_start"], "outer").join(r, ["disease_group", "week_start"], "left")
             .fillna(0).orderBy("disease_group", "week_start").collect())
     _title(f"Time travel (ING-7): gold.weekly_counts at version {version} (data to {known_until}) vs now")
-    print(f"  {'disease':10s} {'week':10s} {'known then':>11s} {'known now':>10s} {'revised by':>11s} {'triangle':>9s}")
+    print(f"  {'disease':10s} {'week':10s} {'known then':>11s} {'known now':>10s} {'revised by':>11s} {'rebuilt':>9s}")
     out = []
     for x in rows:
         print(f"  {x.disease_group:10s} {str(x.week_start):10s} {x.known_then:>11,d} {x.known_now:>10,d} "

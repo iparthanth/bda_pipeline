@@ -226,7 +226,8 @@ def main() -> None:
     if tt.exists():
         tj = json.loads(tt.read_text())
         m.update(TTKnownUntil=pd.Timestamp(tj["known_until_then"]).strftime("%-d %b %Y"), TTRevisedWeeks=str(tj["revised_weeks"]),
-                 TTRows=str(len(tj["rows"])), TTTriangleDiff=_fmt(tj["triangle_minus_time_travel"]["total"], 0))
+                 TTRows=str(len(tj["rows"])), TTTriangleDiff=_fmt(abs(tj["triangle_minus_time_travel"]["total"]), 0),
+                 TTKnownThen=_fmt(tj["triangle_minus_time_travel"]["known_then_total"], 0))
     lat = DOCS / "experiments" / "stream_latency.jsonl"
     if lat.exists():
         L = [json.loads(x) for x in lat.read_text().splitlines() if x.strip()]

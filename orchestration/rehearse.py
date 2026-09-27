@@ -135,8 +135,9 @@ def main() -> int:
     tt = json.loads(tmp.read_text())
     tt["description"] = ("gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current "
                          "version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from "
-                         "gold.reporting_triangle, the backtest's method, at weekly resolution (it also counts the "
-                         "reports made later in the as-of week, so it can only be equal or slightly higher)")
+                         "today's silver by first report date <= the old as-of day - the principle behind the "
+                         "backtest's reporting triangle - and should equal 'known_then' (differences can only come "
+                         "from duplicate links created by the later records)")
     rows = pd.DataFrame(tt["rows"])
     tt["revised_weeks"] = int((rows.known_now != rows.known_then).sum())
     tt["triangle_minus_time_travel"] = {"max_abs": int((rows.triangle_then - rows.known_then).abs().max()),

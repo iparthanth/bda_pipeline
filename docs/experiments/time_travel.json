@@ -1,0 +1,183 @@
+{
+ "table": "gold.weekly_counts",
+ "version_then": 2,
+ "latest_version": 3,
+ "known_until_then": "2026-01-01",
+ "rows": [
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-11-24",
+   "known_then": 5900,
+   "known_now": 5900,
+   "triangle_then": 5900
+  },
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-12-01",
+   "known_then": 4115,
+   "known_now": 4115,
+   "triangle_then": 4115
+  },
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-12-08",
+   "known_then": 2888,
+   "known_now": 2889,
+   "triangle_then": 2889
+  },
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-12-15",
+   "known_then": 1560,
+   "known_now": 1568,
+   "triangle_then": 1563
+  },
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-12-22",
+   "known_then": 792,
+   "known_now": 860,
+   "triangle_then": 832
+  },
+  {
+   "disease_group": "dengue",
+   "week_start": "2025-12-29",
+   "known_then": 146,
+   "known_now": 383,
+   "triangle_then": 269
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-11-24",
+   "known_then": 13626,
+   "known_now": 13626,
+   "triangle_then": 13626
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-12-01",
+   "known_then": 12903,
+   "known_now": 12903,
+   "triangle_then": 12903
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-12-08",
+   "known_then": 12453,
+   "known_now": 12461,
+   "triangle_then": 12461
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-12-15",
+   "known_then": 11426,
+   "known_now": 11600,
+   "triangle_then": 11545
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-12-22",
+   "known_then": 10191,
+   "known_now": 11600,
+   "triangle_then": 11042
+  },
+  {
+   "disease_group": "diarrhoea",
+   "week_start": "2025-12-29",
+   "known_then": 2940,
+   "known_now": 12015,
+   "triangle_then": 7159
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-11-24",
+   "known_then": 14315,
+   "known_now": 14315,
+   "triangle_then": 14315
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-12-01",
+   "known_then": 15135,
+   "known_now": 15135,
+   "triangle_then": 15135
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-12-08",
+   "known_then": 16261,
+   "known_now": 16267,
+   "triangle_then": 16267
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-12-15",
+   "known_then": 17139,
+   "known_now": 17411,
+   "triangle_then": 17311
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-12-22",
+   "known_then": 15198,
+   "known_now": 17360,
+   "triangle_then": 16501
+  },
+  {
+   "disease_group": "ili",
+   "week_start": "2025-12-29",
+   "known_then": 4979,
+   "known_now": 19176,
+   "triangle_then": 11693
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-11-24",
+   "known_then": 117,
+   "known_now": 117,
+   "triangle_then": 117
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-12-01",
+   "known_then": 104,
+   "known_now": 104,
+   "triangle_then": 104
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-12-08",
+   "known_then": 81,
+   "known_now": 81,
+   "triangle_then": 81
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-12-15",
+   "known_then": 62,
+   "known_now": 63,
+   "triangle_then": 62
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-12-22",
+   "known_then": 71,
+   "known_now": 84,
+   "triangle_then": 82
+  },
+  {
+   "disease_group": "malaria",
+   "week_start": "2025-12-29",
+   "known_then": 25,
+   "known_now": 64,
+   "triangle_then": 40
+  }
+ ],
+ "description": "gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from gold.reporting_triangle, the backtest's method, at weekly resolution (it also counts the reports made later in the as-of week, so it can only be equal or slightly higher)",
+ "revised_weeks": 15,
+ "triangle_minus_time_travel": {
+  "max_abs": 6714,
+  "total": 13585,
+  "known_then_total": 162427
+ }
+}

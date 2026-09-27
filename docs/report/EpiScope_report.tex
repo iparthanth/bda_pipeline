@@ -582,9 +582,10 @@ encounter file dropped in the inbox refreshed \texttt{alerts.json} after a media
 load creates a new Delta version of silver and gold, so ``what did we know on day $t$'' is a
 \texttt{versionAsOf} read (\texttt{make inspect WHAT=asof}). Reading \texttt{gold.weekly\_counts} at the version
 before the rehearsal drop shows the counts known on \TTKnownUntil{}; the drop's late reports revised
-\TTRevisedWeeks{} of the \TTRows{} recent disease-weeks. The backtest rebuilds the same knowledge from the reporting
-triangle without keeping a version per day; at weekly resolution it differs from the time-travel read by
-\TTTriangleDiff{} cases in total (reports made later in the as-of week), which validates that shortcut.
+\TTRevisedWeeks{} of the \TTRows{} recent disease-weeks. The backtest does not keep a version per day: it rebuilds
+past knowledge from report dates (the reporting triangle). Rebuilding the same weeks from today's silver with
+\emph{first report date $\leq$ \TTKnownUntil{}} differs from the time-travel read by \TTTriangleDiff{} of
+\TTKnownThen{} cases, which validates that shortcut.
 Table~\ref{tab:cal} shows the dengue calendar for the next 12 months.
 
 \begin{table}[t]\centering\footnotesize\setlength{\tabcolsep}{3pt}
