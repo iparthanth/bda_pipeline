@@ -59,8 +59,8 @@ SF=0.02 docker compose up            # quick run (PowerShell: $env:SF="0.02"; do
 After the first run, `docker compose up --no-deps dashboard` starts only the dashboard (without `--no-deps`
 Docker would run the whole pipeline again first).
 
-`make all SF=0.25` runs a smaller scale factor. `make all` at SF = 1 (28.2 M encounter rows) took 22.5 min on a
-4-vCPU / 15 GB machine (per-stage times for SF 0.25 / 0.5 / 1 in `docs/experiments/scaling.csv`); the limit is 45 min.
+`make all SF=0.25` runs a smaller scale factor. `make all` at SF = 1 (28.6 M encounter rows) took 19.6 min on a
+4-vCPU / 16 GB machine (per-stage times for SF 0.25 / 0.5 / 1 in `docs/experiments/scaling.csv`); the limit is 45 min.
 On native Windows, use Docker or WSL2 for 2b (Spark needs Hadoop's `winutils` on Windows).
 
 Other targets: `make test` (automated tests), `make incremental` (ingest the first future daily drop),

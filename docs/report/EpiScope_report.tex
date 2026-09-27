@@ -559,8 +559,8 @@ Adaptive query execution (skew-join handling, coalescing of the 32 shuffle parti
 we did not run a separate skew experiment.
 
 \begin{figure*}[t]\centering
-\includegraphics[width=0.49\textwidth]{spark_ui_broadcast_off.png}\hfill
-\includegraphics[width=0.49\textwidth]{spark_ui_broadcast_on.png}
+\includegraphics[width=0.49\textwidth,height=8cm,keepaspectratio]{spark_ui_broadcast_off.png}\hfill
+\includegraphics[width=0.49\textwidth,height=8cm,keepaspectratio]{spark_ui_broadcast_on.png}
 \caption{Spark UI (History Server, SQL tab) for the registry join on the SF\,=\,1 lake. Left: broadcast disabled --
 both sides are shuffled (Exchange) and sorted before a SortMergeJoin. Right: BroadcastHashJoin -- the small facility
 registry is broadcast and the encounters are joined where they are read, with no shuffle of the large side.}

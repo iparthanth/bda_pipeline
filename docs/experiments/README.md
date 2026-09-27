@@ -11,7 +11,7 @@
 | `hidden_drop_rehearsal.json` | `make drop DROP=data/drops` | The 14 generated rehearsal drops: rows, run time, quarantine, which alerts the injected outbreaks raised |
 | `time_travel.json` | `make inspect WHAT=asof` after a drop | Delta time travel (ING-7): national weekly cases as known before the drop vs after, checked against the reporting-triangle reconstruction |
 
-Hardware used for the numbers in the report: 4 vCPU, 15 GB RAM, Linux container, Spark 3.5.3 local mode,
+Hardware used for the numbers in the report: 4 vCPU, 16 GB RAM, Linux container, Spark 3.5.3 local mode,
 6 GB driver heap, Java 17, Python 3.11.
 
 To view the Spark UI of past runs: `SPARK_HISTORY_OPTS="-Dspark.history.fs.logDirectory=file://$PWD/data/spark-events"

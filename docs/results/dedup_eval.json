@@ -1,11 +1,11 @@
 {
-  "true_duplicate_pairs": 127264,
-  "predicted_links": 123597,
-  "true_positives": 123597,
-  "precision_all_links": 1.0,
-  "recall": 0.9711858813175761,
+  "true_duplicate_pairs": 130822,
+  "predicted_links": 126828,
+  "true_positives": 126826,
+  "precision_all_links": 0.9999842306115369,
+  "recall": 0.9694546788766415,
   "precision_on_injected": 1.0,
   "distinct_episodes_wrongly_merged": 0,
-  "distinct_episode_pairs": 74765,
+  "distinct_episode_pairs": 75724,
   "note": "all predicted links are counted as positives; links between records not injected as duplicates are real same-patient repeats created by chance or genuine false merges - precision_all_links is the conservative figure"
 }

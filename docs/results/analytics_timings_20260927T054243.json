@@ -1,0 +1,14 @@
+{
+  "as_of": "2025-12-31",
+  "stage_seconds": {
+    "detect": 17.9,
+    "evaluate": 29.4,
+    "forecast": 259.6,
+    "demand": 3.5,
+    "optimise": 12.7,
+    "calendar": 6.5,
+    "seir": 1.7,
+    "privacy": 26.0,
+    "dedup_eval": 76.2
+  }
+}

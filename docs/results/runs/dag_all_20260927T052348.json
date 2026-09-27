@@ -1,6 +1,6 @@
 {
   "dag": "all",
-  "started": "20260926T191625",
+  "started": "20260927T052348",
   "scale_factor": 1.0,
   "hardware": {
     "platform": "Linux-6.18.44-fc-v37-x86_64-with-glibc2.39",
@@ -15,57 +15,57 @@
       "task": "env",
       "cmd": "-m orchestration.init_env",
       "attempts": 1,
-      "start": "2026-09-26T19:16:26",
-      "end": "2026-09-26T19:16:26",
+      "start": "2026-09-27T05:23:48",
+      "end": "2026-09-27T05:23:48",
       "seconds": 0.1,
       "returncode": 0
     },
     {
       "task": "fetch_public",
-      "cmd": "-m generator.fetch_public --offline",
+      "cmd": "-m generator.fetch_public",
       "attempts": 1,
-      "start": "2026-09-26T19:16:26",
-      "end": "2026-09-26T19:16:27",
-      "seconds": 1.2,
+      "start": "2026-09-27T05:23:48",
+      "end": "2026-09-27T05:23:52",
+      "seconds": 4.3,
       "returncode": 0
     },
     {
       "task": "generate",
       "cmd": "-m generator.generate --sf 1.0",
       "attempts": 1,
-      "start": "2026-09-26T19:16:27",
-      "end": "2026-09-26T19:17:27",
-      "seconds": 60.1,
+      "start": "2026-09-27T05:23:52",
+      "end": "2026-09-27T05:24:51",
+      "seconds": 58.8,
       "returncode": 0
     },
     {
       "task": "load_history",
       "cmd": "-m pipeline.run_load",
       "attempts": 1,
-      "start": "2026-09-26T19:17:27",
-      "end": "2026-09-26T19:29:59",
-      "seconds": 752.1,
+      "start": "2026-09-27T05:24:51",
+      "end": "2026-09-27T05:35:10",
+      "seconds": 618.7,
       "returncode": 0
     },
     {
       "task": "analytics",
       "cmd": "-m analytics.run_analytics",
       "attempts": 1,
-      "start": "2026-09-26T19:29:59",
-      "end": "2026-09-26T19:38:04",
-      "seconds": 485.3,
+      "start": "2026-09-27T05:35:10",
+      "end": "2026-09-27T05:42:44",
+      "seconds": 454.1,
       "returncode": 0
     },
     {
       "task": "export",
       "cmd": "-m serving.export",
       "attempts": 1,
-      "start": "2026-09-26T19:38:04",
-      "end": "2026-09-26T19:38:58",
-      "seconds": 53.8,
+      "start": "2026-09-27T05:42:44",
+      "end": "2026-09-27T05:43:26",
+      "seconds": 42.5,
       "returncode": 0
     }
   ],
-  "seconds": 1352.6,
+  "seconds": 1178.5,
   "status": "success"
 }

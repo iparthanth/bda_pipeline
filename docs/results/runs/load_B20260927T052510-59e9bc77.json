@@ -1,5 +1,5 @@
 {
-  "batch_id": "B20260926T191747-adb3b2c6",
+  "batch_id": "B20260927T052510-59e9bc77",
   "source": "/home/user/work/sf1/landing",
   "files": {
     "encounters": 320,
@@ -7,38 +7,38 @@
     "stock": 1826,
     "public_boundaries": 1,
     "public_population": 1,
-    "public_weather": 1,
+    "public_weather": 225,
     "public_opendengue": 1
   },
   "skipped_files": 0,
   "first_load": true,
-  "episode_links": 123597,
+  "episode_links": 126828,
   "as_of": "2025-12-31",
   "status": "loaded",
-  "seconds": 751.3,
+  "seconds": 618.1,
   "stage_seconds": {
-    "bronze": 122.2,
-    "silver": 516.7,
-    "dedup": 24.8,
-    "gold": 78.9
+    "bronze": 106.7,
+    "silver": 423.5,
+    "dedup": 20.4,
+    "gold": 53.0
   },
   "dq": [
     {
       "source": "facilities",
-      "rows_in": 788,
+      "rows_in": 785,
       "rows_quarantined": 2,
       "duplicates_removed": 0
     },
     {
       "source": "encounters",
-      "rows_in": 28239687,
-      "rows_quarantined": 440423,
-      "duplicates_removed": 544599
+      "rows_in": 28641734,
+      "rows_quarantined": 446927,
+      "duplicates_removed": 552161
     },
     {
       "source": "stock",
-      "rows_in": 1422840,
-      "rows_quarantined": 4285,
+      "rows_in": 1417357,
+      "rows_quarantined": 4301,
       "duplicates_removed": 0
     }
   ]

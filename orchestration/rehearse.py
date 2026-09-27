@@ -33,12 +33,10 @@ from pipeline.common.spark import get_spark
 OUT = REPO_ROOT / "docs" / "experiments"
 
 
-def snapshot(_spark=None) -> dict:
+def _snapshot_here() -> dict:
     from delta.tables import DeltaTable
 
-    spark = get_spark("rehearse")
-
-    spark.catalog.clearCache()
+    spark = get_spark("rehearse-snapshot")
     enc = spark.read.format("delta").load(lake("silver", "encounters"))
     wk = spark.read.format("delta").load(lake("gold", "weekly_counts"))
     s = enc.agg(F.count("*").alias("rows"), F.countDistinct("encounter_id").alias("ids")).first()
@@ -50,17 +48,13 @@ def snapshot(_spark=None) -> dict:
             .agg(F.max("version")).first()[0]}
 
 
-def _release() -> None:
-    """Stop this process's Spark session before a subprocess starts its own (two 6 GB JVMs do not fit in 16 GB)."""
-    from pipeline.common import spark as sp
-
-    if sp._SESSION is not None:
-        sp._SESSION.stop()
-        sp._SESSION = None
+def snapshot() -> dict:
+    """Counts of the lake, measured in a separate process (the embedded Derby catalog admits one JVM)."""
+    _, out = _py("orchestration.rehearse", "--snapshot")
+    return json.loads(out[out.index("{"):])
 
 
 def _py(*args: str) -> tuple[float, str]:
-    _release()
     t = time.time()
     p = subprocess.run([sys.executable, "-m", *args], cwd=REPO_ROOT, capture_output=True, text=True)
     if p.returncode != 0:
@@ -80,19 +74,21 @@ def _dag_drop(source: str) -> tuple[dict, dict]:
 
 
 def main() -> int:
-    spark = None
+    if "--snapshot" in sys.argv:
+        print(json.dumps(_snapshot_here(), default=str))
+        return 0
     drops = sorted(p for p in Path(path("drops")).iterdir() if p.is_dir())
     first = str(drops[0])
 
     # 1. one incremental day, then a re-run and a forced re-ingest
-    before = snapshot(spark)
+    before = snapshot()
     dag, load = _dag_drop(first)
-    after = snapshot(spark)
+    after = snapshot()
     rerun_s, rerun_out = _py("pipeline.run_load", "--source", first, "--no-public")
     status = json.loads(rerun_out[rerun_out.index("{"):])["status"]
     force_s, _ = _py("pipeline.run_load", "--source", first, "--no-public", "--force")
     forced = _latest("load_*.json")
-    after_force = snapshot(spark)
+    after_force = snapshot()
     inc = {"description": "one incremental daily drop (first future day) through the drop DAG, then the same "
                           "drop loaded again (no-op) and force re-ingested",
            "drop_dir": Path(first).name, "before_drop": before, "after_drop": after,
@@ -108,9 +104,9 @@ def main() -> int:
     print(json.dumps(inc["checks"]), flush=True)
 
     # 2. the whole drop folder, as the hidden test drop would arrive
-    pre = snapshot(spark)
+    pre = snapshot()
     dag, load = _dag_drop(str(Path(path("drops"))))
-    post = snapshot(spark)
+    post = snapshot()
     alerts = json.loads((Path(path("serving_out")) / "national" / "alerts.json").read_text())["table"]
     top = sorted(alerts, key=lambda r: -(r.get("statistic") or 0))[:4]
     gt = pd.read_csv(Path(path("ground_truth")) / "ground_truth_outbreaks.csv")
@@ -134,9 +130,9 @@ def main() -> int:
     print(json.dumps({k: reh[k] for k in ("days", "new_rows", "quarantined", "new_alert_series")}), flush=True)
 
     # 3. time travel: what did the lake know before the rehearsal drop?
-    from orchestration.inspect_lake import asof
-
-    tt = asof(get_spark("rehearse"), version=pre["gold_weekly_version"])
+    tmp = OUT / "time_travel.json"
+    _py("orchestration.inspect_lake", "asof", "--version", str(pre["gold_weekly_version"]), "--json", str(tmp))
+    tt = json.loads(tmp.read_text())
     tt["description"] = ("gold.weekly_counts read with Delta versionAsOf before the rehearsal drop vs the current "
                          "version (late reports revise past weeks); 'triangle_then' rebuilds the old counts from "
                          "gold.reporting_triangle, the backtest's method, at weekly resolution (it also counts the "

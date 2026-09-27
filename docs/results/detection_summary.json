@@ -12,20 +12,20 @@
     "method": "cusum",
     "threshold": 17.0,
     "variant": "guarded",
-    "sensitivity_local": 0.90625,
+    "sensitivity_local": 0.875,
     "n_local": 32,
-    "median_delay_local": 15.0,
+    "median_delay_local": 9.0,
     "sensitivity_nrs_districts": 1.0,
-    "median_delay_nrs": 95.0,
-    "false_alerts_per_district_year": 2.0248234160958902,
+    "median_delay_nrs": 93.0,
+    "false_alerts_per_district_year": 2.96687446489726,
     "false_by_disease": {
-      "dengue": 242,
-      "diarrhoea": 168,
-      "ili": 96,
-      "malaria": 12
+      "dengue": 407,
+      "diarrhoea": 224,
+      "ili": 99,
+      "malaria": 29
     },
-    "alert_events": 618,
-    "ppv_events": 0.16181229773462782
+    "alert_events": 863,
+    "ppv_events": 0.1205098493626883
   },
   "eval_period": [
     "2022-01-01",
@@ -37,7 +37,7 @@
       "kind": "silence_then_backfill",
       "variant": "naive",
       "method": "ears_c1",
-      "threshold": 6.0,
+      "threshold": 8.0,
       "alert_days": 3,
       "diseases_alerting": [
         "dengue",
@@ -50,63 +50,60 @@
       "kind": "silence_then_backfill",
       "variant": "guarded",
       "method": "ears_c1",
-      "threshold": 6.0,
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "ears_c1",
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "guarded",
+      "method": "ears_c1",
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "naive",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 3,
+      "diseases_alerting": [
+        "dengue",
+        "diarrhoea",
+        "ili"
+      ]
+    },
+    {
+      "artefact_id": "ART-BACKFILL",
+      "kind": "silence_then_backfill",
+      "variant": "guarded",
+      "method": "ears_c2",
+      "threshold": 8.0,
+      "alert_days": 0,
+      "diseases_alerting": []
+    },
+    {
+      "artefact_id": "ART-ONBOARD",
+      "kind": "reporting_practice_change",
+      "variant": "naive",
+      "method": "ears_c2",
+      "threshold": 8.0,
       "alert_days": 1,
       "diseases_alerting": [
-        "diarrhoea"
-      ]
-    },
-    {
-      "artefact_id": "ART-ONBOARD",
-      "kind": "reporting_practice_change",
-      "variant": "naive",
-      "method": "ears_c1",
-      "threshold": 6.0,
-      "alert_days": 0,
-      "diseases_alerting": []
-    },
-    {
-      "artefact_id": "ART-ONBOARD",
-      "kind": "reporting_practice_change",
-      "variant": "guarded",
-      "method": "ears_c1",
-      "threshold": 6.0,
-      "alert_days": 0,
-      "diseases_alerting": []
-    },
-    {
-      "artefact_id": "ART-BACKFILL",
-      "kind": "silence_then_backfill",
-      "variant": "naive",
-      "method": "ears_c2",
-      "threshold": 8.0,
-      "alert_days": 3,
-      "diseases_alerting": [
-        "dengue",
-        "diarrhoea",
         "ili"
       ]
-    },
-    {
-      "artefact_id": "ART-BACKFILL",
-      "kind": "silence_then_backfill",
-      "variant": "guarded",
-      "method": "ears_c2",
-      "threshold": 8.0,
-      "alert_days": 2,
-      "diseases_alerting": [
-        "diarrhoea",
-        "ili"
-      ]
-    },
-    {
-      "artefact_id": "ART-ONBOARD",
-      "kind": "reporting_practice_change",
-      "variant": "naive",
-      "method": "ears_c2",
-      "threshold": 8.0,
-      "alert_days": 0,
-      "diseases_alerting": []
     },
     {
       "artefact_id": "ART-ONBOARD",
@@ -136,11 +133,8 @@
       "variant": "guarded",
       "method": "ears_c3",
       "threshold": 8.0,
-      "alert_days": 6,
-      "diseases_alerting": [
-        "diarrhoea",
-        "ili"
-      ]
+      "alert_days": 0,
+      "diseases_alerting": []
     },
     {
       "artefact_id": "ART-ONBOARD",
@@ -150,7 +144,7 @@
       "threshold": 8.0,
       "alert_days": 2,
       "diseases_alerting": [
-        "dengue"
+        "ili"
       ]
     },
     {
@@ -159,10 +153,8 @@
       "variant": "guarded",
       "method": "ears_c3",
       "threshold": 8.0,
-      "alert_days": 2,
-      "diseases_alerting": [
-        "dengue"
-      ]
+      "alert_days": 0,
+      "diseases_alerting": []
     },
     {
       "artefact_id": "ART-BACKFILL",
@@ -170,9 +162,10 @@
       "variant": "naive",
       "method": "cusum",
       "threshold": 17.0,
-      "alert_days": 15,
+      "alert_days": 13,
       "diseases_alerting": [
-        "diarrhoea"
+        "dengue",
+        "ili"
       ]
     },
     {

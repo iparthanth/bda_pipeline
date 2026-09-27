@@ -3,17 +3,29 @@
     "status": "real",
     "file": "/home/user/work/sf1/landing/public/boundaries/bgd_admin2.geojson",
     "url": "https://raw.githubusercontent.com/meetshaks/bangladesh-administrative-boundaries-json/7dbe1a69296f4f296e0c973318fb8782806a6a09/bgd_admin2.geojson",
-    "note": "cached"
+    "retrieved_at": "2026-09-27T05:23:51+00:00"
   },
   "S2_population": {
-    "status": "synthetic_fallback",
-    "file": "/home/user/work/sf1/landing/public/population/SYNTHETIC_FALLBACK_population.csv",
-    "note": "HDX unreachable - synthetic denominators; re-run with internet for BBS 2022 data"
+    "status": "real",
+    "file": "/home/user/work/sf1/landing/public/population/population_hrsl_adm2.csv",
+    "source": "Meta / CIESIN High Resolution Settlement Layer population maps (Data for Good)",
+    "licence": "CC BY 4.0",
+    "url": "https://dataforgood-fb-data.s3.amazonaws.com/demographic_csvs/<layer>/<layer>_<tile>.csv",
+    "note": "pinned snapshot in data/reference (generator/build_reference.py)"
   },
   "S3_weather": {
-    "status": "synthetic_fallback",
-    "file": "/home/user/work/sf1/landing/public/weather/SYNTHETIC_FALLBACK_weather.csv",
-    "note": "Open-Meteo unreachable (0/64 districts) - synthetic monsoon climatology"
+    "status": "real",
+    "dir": "/home/user/work/sf1/landing/public/weather",
+    "source": "NOAA Global Surface Summary of the Day (GSOD)",
+    "licence": "public domain (U.S. Government)",
+    "url": "https://noaa-gsod-pds.s3.amazonaws.com/<year>/<station>.csv",
+    "stations": 38,
+    "range": [
+      "2020-07-05",
+      "2026-02-13"
+    ],
+    "observed_until": "2025-08-24",
+    "note": "station observations interpolated to district centroids; days after 2025-08-24 (end of the NOAA mirror) use the stations' day-of-year climatology (source_status = climatology_fill)"
   },
   "S7_opendengue": {
     "status": "real",
@@ -21,5 +33,5 @@
     "url": "https://raw.githubusercontent.com/OpenDengue/master-repo/f2232b8f1c82bfc38006d8ecebd93677b9ac75d0/assets/National_extract_SEARO_V1_3.zip",
     "licence": "CC BY 4.0"
   },
-  "generated_at": "2026-09-26T19:16:27+00:00"
+  "generated_at": "2026-09-27T05:23:52+00:00"
 }
