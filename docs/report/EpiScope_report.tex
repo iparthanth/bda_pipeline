@@ -546,7 +546,8 @@ SF & Rows & Gen. & Bronze & Silver & Gold & Analyt. & Export & Total & Landing &
 
 Two optimisations with before/after evidence (median of three runs on the SF\,=\,1 lake, Spark UI screenshots in
 \texttt{docs/experiments/screenshots}): (i) \textbf{broadcast join of the facility registry} -- with broadcasting
-disabled Spark plans a SortMergeJoin that shuffles all \GenRows{} bronze encounters (Fig.~\ref{fig:sparkui}) and sorts both
+disabled Spark plans a SortMergeJoin that shuffles every bronze encounter (Fig.~\ref{fig:sparkui}: 28.9\,M rows,
+660\,MB of shuffle data, the lake then also held the rehearsal drops) and sorts both
 sides; broadcasting the \GenFacilities{}-row registry gives a BroadcastHashJoin with no shuffle of the large side:
 \OptBcastBefore{}\,s $\rightarrow$ \OptBcastAfter{}\,s (\OptBcastSpeedup{}$\times$); (ii) \textbf{columnar storage} --
 the same per-facility, per-diagnosis count over all encounters reads \OptColCsvGB{}\,GB of CSV in the landing zone
