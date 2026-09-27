@@ -4,7 +4,7 @@
 **Report (PDF):** [`docs/EpiScope_report.pdf`](docs/EpiScope_report.pdf) · **Proposal (M1):** [`docs/proposal.md`](docs/proposal.md) · **Risk log (M2):** [`docs/risk_log.md`](docs/risk_log.md) · **AI usage:** [`AI_USAGE.md`](AI_USAGE.md)
 
 CSE 4345 Big Data Analytics - Complex Engineering Problem, Premier University Chittagong, Spring 2026.
-Group [GROUP NUMBER]: [MEMBER 1 NAME, ID] · [MEMBER 2 NAME, ID] · [MEMBER 3 NAME, ID]
+Group [GROUP NUMBER]: Partha Nath (0222220005101104, Data Engineer) · Tahmid Jamal (0222220005101083, Analytics Engineer) · Taofiq Omar Raju (0222220005101100, Visualisation Engineer)
 
 > **All encounter, facility and stock data are synthetic** (a teaching case, not real patients). Public data:
 > district boundaries from OCHA COD-AB (HDX), OpenDengue V1.3, NOAA GSOD station weather and Meta/CIESIN HRSL
@@ -208,10 +208,10 @@ data/reference/  small real reference files (districts, upazilas, OpenDengue, NO
 | Time | Chapter | Presenter |
 |---|---|---|
 | 00:00 | 1. Problem, stakeholders and conflicts C1-C5 | [MEMBER] |
-| [mm:ss] | 2. Architecture walkthrough | [MEMBER] |
-| [mm:ss] | 3. Recorded pipeline run: clean run, one incremental day, idempotent re-run, quarantine example | Data Engineer |
-| [mm:ss] | 4. Analytics results against baselines | Analytics Engineer |
-| [mm:ss] | 5. Dashboard walkthrough: linked views and what-if panel | Visualisation Engineer |
+| [mm:ss] | 2. Architecture walkthrough | Partha Nath (Data Engineer) |
+| [mm:ss] | 3. Recorded pipeline run: clean run, one incremental day, idempotent re-run, quarantine example | Partha Nath (Data Engineer) |
+| [mm:ss] | 4. Analytics results against baselines | Tahmid Jamal (Analytics Engineer) |
+| [mm:ss] | 5. Dashboard walkthrough: linked views and what-if panel | Taofiq Omar Raju (Visualisation Engineer) |
 | [mm:ss] | 6. Recommendations, ethics and limitations | [MEMBER] |
 
 Recording plan and script: [`docs/video/video_script.md`](docs/video/video_script.md).

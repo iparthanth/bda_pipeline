@@ -1,6 +1,6 @@
 # EpiScope - Project Proposal (Milestone M1)
 
-**CSE 4345 Big Data Analytics - CEP · Group [GROUP NUMBER]** · [MEMBER 1 NAME, ID] (Data Engineer) · [MEMBER 2 NAME, ID] (Analytics Engineer) · [MEMBER 3 NAME, ID] (Visualisation Engineer)
+**CSE 4345 Big Data Analytics - CEP · Group [GROUP NUMBER]** · Partha Nath, 0222220005101104 (Data Engineer) · Tahmid Jamal, 0222220005101083 (Analytics Engineer) · Taofiq Omar Raju, 0222220005101100 (Visualisation Engineer)
 
 ## 1. Problem restatement
 The Ministry of Health needs a prototype national platform that turns routine encounter, laboratory, climate, population and logistics data into (i) early warnings of unusual rises of dengue, acute watery diarrhoea/cholera, influenza-like illness (ILI) and malaria per district, (ii) 1-4-week forecasts of cases and hospital demand, (iii) an allocation of a fixed national stock of supplies and rapid-response teams, and (iv) a seasonal preparedness calendar. Users are non-specialists, so outputs must be explainable, honest about uncertainty, robust to late and incomplete data, and must never expose identifiable patients. The system has to run on a 16 GB laptop and scale to national volumes (25 M+ encounters over 5 years).
@@ -23,9 +23,9 @@ Dengue (A90/A91), diarrhoea/cholera (A00/A09), ILI (J10/J11), malaria (B50-B54).
 ## 5. Roles
 | Role | Lead | Primary requirements |
 |---|---|---|
-| Data Engineer | [MEMBER 1] | ING-*, DQ-*, PRV-1, ENG-1-3 |
-| Analytics Engineer | [MEMBER 2] | AN-1-AN-10, evaluation |
-| Visualisation Engineer | [MEMBER 3] | VIS-*, PRV-2, PRV-3, usability test (>= 2 non-CS users) |
+| Data Engineer | Partha Nath | ING-*, DQ-*, PRV-1, ENG-1-3 |
+| Analytics Engineer | Tahmid Jamal | AN-1-AN-10, evaluation |
+| Visualisation Engineer | Taofiq Omar Raju | VIS-*, PRV-2, PRV-3, usability test (>= 2 non-CS users) |
 Every member commits outside their role (e.g. tests, report sections, reviews).
 
 ## 6. Risk register
