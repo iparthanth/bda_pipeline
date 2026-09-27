@@ -105,9 +105,10 @@ link per role; tokens live only in the git-ignored `.env`). Every data request i
    knows now.
 
 The generator writes 14 rehearsal drops to `data/drops/<date>/` (same schema, including two unannounced outbreaks
-and quality defects): `make drop DROP=data/drops` loads all of them at once. Rehearsed at SF = 1: 13 new days
-(174,804 rows) ingested and every output regenerated in 11.4 min, and the two injected outbreaks became the top two
-alerts (`docs/experiments/hidden_drop_rehearsal.json`).
+and quality defects): `make drop DROP=data/drops` loads all of them at once. Rehearsed at SF = 1 with
+`python -m orchestration.rehearse`: 13 new days (177,864 rows, 2,823 quarantined) ingested and every output
+regenerated in 10.7 min; the only two alerts raised were the two injected drop outbreaks
+(`docs/experiments/hidden_drop_rehearsal.json`).
 
 ## 4. Architecture summary
 
