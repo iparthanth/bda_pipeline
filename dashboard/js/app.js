@@ -106,7 +106,10 @@ async function start() {
   const w = data.weekly.weeks.length;
   const sc = data.allocation.scenarios;
   const op = m.operating_point;
-  store.state.weekRange = [w - 8, w - 1];
+  // the newest week is incomplete when the data end before its Sunday (e.g. 3 of 7 days) - leave it out of
+  // the default period and the plotted series so it is not read as a sudden fall in cases
+  store.lastFull = d3.timeDay.offset(new Date(data.weekly.weeks[w - 1]), 6) > new Date(m.freshness.cases) ? w - 2 : w - 1;
+  store.state.weekRange = [store.lastFull - 7, store.lastFull];
   store.state.thr = sc.thresholds.includes(op.threshold) ? op.threshold : sc.thresholds[0];
   store.state.budget = sc.budget_levels.includes(0.6) ? 0.6 : sc.budget_levels[Math.floor(sc.budget_levels.length / 2)];
   const rec = data.allocation.summary.alpha;
@@ -139,7 +142,7 @@ function controls(data) {
   asel.selectAll("option").data(areas).join("option").attr("value", (d) => d[0]).text((d) => d[1]);
   d3.select("#btn-reset").on("click", () => {
     const w = data.weekly.weeks.length;
-    store.set({ area: m.role.scope === "district" ? m.role.district_pcode : "BD", weekRange: [w - 8, w - 1] });
+    store.set({ area: m.role.scope === "district" ? m.role.district_pcode : "BD", weekRange: [store.lastFull - 7, store.lastFull] });
   });
   d3.select("#btn-theme").on("click", () => {
     const root = document.documentElement;

@@ -89,7 +89,10 @@ export function update(store) {
     });
   const weeks = store.data.weekly.weeks;
   const [a, b] = playWeek !== null ? [playWeek, playWeek] : store.state.weekRange;
-  d3.select("#map-caption").text(`${store.data.meta.diseases[store.state.disease]} · mean weekly incidence, ${fmt.date(weeks[a])} – ${fmt.date(d3.timeDay.offset(new Date(weeks[b]), 6))}`);
+  // say so when nothing is in alert, so an empty map is not mistaken for missing markers
+  const quiet = playWeek === null && !alerts.length
+    ? ` · no ${store.data.meta.diseases[store.state.disease].toLowerCase()} alerts on ${fmt.date(store.data.alerts.as_of)} at threshold ${store.state.thr}` : "";
+  d3.select("#map-caption").text(`${store.data.meta.diseases[store.state.disease]} · mean weekly incidence, ${fmt.date(weeks[a])} – ${fmt.date(d3.timeDay.offset(new Date(weeks[b]), 6))}${quiet}`);
   const lg = d3.select("#map-legend");
   lg.selectAll("*").remove();
   const steps = color.range();
@@ -99,7 +102,7 @@ export function update(store) {
     s.append("span").attr("class", "sw").style("background", c);
     s.append("span").text(i === 0 ? `< ${d3.format(".2~g")(th[0])}` : i === steps.length - 1 ? `≥ ${d3.format(".2~g")(th[i - 1])} per 100k/wk` : "");
   });
-  legendItems(lg.append("span").node(), [
+  legendItems(lg.append("span").attr("class", "legend").style("margin-top", "0").node(), [
     { color: "var(--hatch-bg)", hatch: true, label: "includes suppressed weeks (<5)" },
     { color: "var(--critical)", label: `${STATUS.alert.icon} alert` },
     { color: "var(--serious)", label: `${STATUS.verify_reporting.icon} verify reporting` },

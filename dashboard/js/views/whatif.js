@@ -55,7 +55,7 @@ export function update(store) {
 // Efficiency-equity curve (AN-8): total weighted unmet demand vs. the lowest district coverage, per alpha,
 // at the selected budget; population-proportional baseline for comparison.
 function curve(store) {
-  const W = 420, H = 210, M = { t: 12, r: 12, b: 36, l: 56 };
+  const W = 420, H = 222, M = { t: 24, r: 12, b: 36, l: 56 };
   const svg = svgIn("#curve", W, H).attr("aria-label", "Efficiency-equity trade-off");
   const pts = store.data.allocation.curve.filter((r) => r.budget_level === store.state.budget && r.min_district_coverage !== null);
   const opt = pts.filter((r) => r.status === "optimal").sort((a, b) => a.alpha - b.alpha);
@@ -67,7 +67,7 @@ function curve(store) {
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - M.b})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.format(".0%")));
   svg.append("g").attr("class", "axis").attr("transform", `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(4).tickFormat(d3.format("~s")));
   svg.append("text").attr("x", (M.l + W - M.r) / 2).attr("y", H - 4).attr("text-anchor", "middle").text("Equity: lowest district coverage →");
-  svg.append("text").attr("x", 4).attr("y", M.t - 2).text("Weighted unmet need, patient-equivalents (lower = more efficient)");
+  svg.append("text").attr("x", 4).attr("y", M.t - 12).text("Weighted unmet need, patient-equivalents (lower = more efficient)");
   svg.append("path").datum(opt).attr("fill", "none").attr("stroke", "var(--series-1)").attr("stroke-width", 2)
     .attr("d", d3.line().x((p) => x(p.min_district_coverage)).y((p) => y(p.weighted_unmet)));
   svg.selectAll("circle.o").data(opt).join("circle").attr("class", "o").attr("r", (p) => (p.alpha === store.state.alpha ? 7 : 5))
@@ -77,8 +77,15 @@ function curve(store) {
     .on("mousemove", (e, p) => showTip(e, `<div class="t">Equity floor α = ${p.alpha}</div>Weighted unmet need: ${fmt.num(p.weighted_unmet, 0)} patient-eq.<br>
       Gap covered: ${fmt.num(p.gap_covered_pct, 1)}%<br>Lowest district coverage: ${fmt.pct(p.min_district_coverage)}<br>Districts below 50%: ${p.districts_below_50pct}`))
     .on("mouseleave", hideTip);
-  svg.selectAll("text.al").data(opt).join("text").attr("class", "al").attr("x", (p) => x(p.min_district_coverage) + 7)
-    .attr("y", (p) => y(p.weighted_unmet) - 6).text((p) => `α=${p.alpha}`);
+  const placed = [];
+  const labelled = [...opt].sort((a, b) => (b.alpha === store.state.alpha) - (a.alpha === store.state.alpha)).filter((p) => {
+    const px = x(p.min_district_coverage), py = y(p.weighted_unmet);
+    if (placed.some(([qx, qy]) => Math.abs(qx - px) < 40 && Math.abs(qy - py) < 12)) return false;
+    placed.push([px, py]); return true;
+  });
+  svg.selectAll("text.al").data(labelled).join("text").attr("class", "al").attr("x", (p) => x(p.min_district_coverage) + 9)
+    .attr("y", (p) => y(p.weighted_unmet) + 4).style("font-weight", (p) => (p.alpha === store.state.alpha ? 700 : 400))
+    .text((p) => `α=${p.alpha}`);
   if (base) {
     svg.append("rect").attr("x", x(base.min_district_coverage) - 5).attr("y", y(base.weighted_unmet) - 5).attr("width", 10).attr("height", 10)
       .attr("fill", "var(--series-2)").on("mousemove", (e) => showTip(e, `<div class="t">Population-proportional baseline</div>

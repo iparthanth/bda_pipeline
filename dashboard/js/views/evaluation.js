@@ -9,7 +9,7 @@ export function init() {}
 export function update(store) {
   const ev = store.data.evaluation;
   if (!ev || !ev.tradeoff) return;
-  const W = 520, H = 250, M = { t: 14, r: 14, b: 34, l: 48 };
+  const W = 520, H = 262, M = { t: 26, r: 14, b: 34, l: 48 };
   const svg = svgIn("#eval", W, H).attr("aria-label", "Detection trade-off curve");
   const rows = ev.tradeoff.filter((r) => r.variant === "guarded");
   const x = d3.scaleLinear().domain([0, d3.min([d3.max(rows, (r) => r.false_alerts_per_district_year), 12])]).nice().range([M.l, W - M.r]);
@@ -18,7 +18,7 @@ export function update(store) {
   svg.append("g").attr("class", "axis").attr("transform", `translate(0,${H - M.b})`).call(d3.axisBottom(x).ticks(6));
   svg.append("g").attr("class", "axis").attr("transform", `translate(${M.l},0)`).call(d3.axisLeft(y).ticks(5).tickFormat(d3.format(".0%")));
   svg.append("text").attr("x", (M.l + W) / 2).attr("y", H - 4).attr("text-anchor", "middle").text("False alerts per district-year →");
-  svg.append("text").attr("x", 4).attr("y", M.t - 3).text("Outbreaks detected (sensitivity)");
+  svg.append("text").attr("x", 4).attr("y", M.t - 12).text("Outbreaks detected (sensitivity)");
   const byM = d3.group(rows.filter((r) => r.false_alerts_per_district_year <= x.domain()[1]), (r) => r.method);
   for (const [m, rs] of byM) {
     const pts = rs.sort((a, b) => a.false_alerts_per_district_year - b.false_alerts_per_district_year);

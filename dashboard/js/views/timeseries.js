@@ -31,7 +31,10 @@ export function update(store) {
   const { area, disease, weekRange } = store.state;
   const weeks = store.data.weekly.weeks.map((w) => new Date(w));
   const ser = seriesFor(store, area, disease);
-  const obs = (ser.values || []).map((v, i) => ({ d: weeks[i], v }));
+  const lastFull = store.lastFull ?? weeks.length - 1;
+  const obs = (ser.values || []).map((v, i) => ({ d: weeks[i], v })).slice(0, lastFull + 1);
+  d3.select("#ts-partial").text(lastFull < weeks.length - 1
+    ? ` The week of ${fmt.date(weeks[weeks.length - 1])} is incomplete (data to ${fmt.date(store.data.meta.freshness.cases)}) and is not plotted.` : "");
   const key = ser.key;
   const fc = store.data.forecasts.forecast[key];
   const now = store.data.forecasts.nowcast[key];
@@ -41,7 +44,7 @@ export function update(store) {
   const thrRows = thr ? thr.map((v, i) => ({ d: weeks[i], v })) : [];
 
   const [a, b] = weekRange;
-  const endDate = b >= weeks.length - 1 && fcRows.length ? fcRows[fcRows.length - 1].d : weeks[b];
+  const endDate = b >= lastFull && fcRows.length ? fcRows[fcRows.length - 1].d : weeks[b];
   const x = d3.scaleTime().domain([weeks[a], endDate]).range([M.l, W - M.r]);
   const inRange = (d) => d >= weeks[a] && d <= endDate;
   const ymax = d3.max([
