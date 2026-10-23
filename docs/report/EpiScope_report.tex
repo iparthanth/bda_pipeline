@@ -183,8 +183,9 @@ population share of every resource shipped; the curve in Section~\ref{sec:evopt}
 \textbf{C4 freshness vs.\ cost.} Allocation and forecasting decisions are weekly and reporting delay is days,
 so a daily incremental batch is the main cadence; a Structured Streaming path refreshes alerts within five
 minutes for emergencies at the cost of a long-running process. \textbf{C5 accuracy vs.\ interpretability.}
-The pooled gradient-boosting model is more accurate at every horizon (relative WIS \HgbRelWISOne{} vs
-\GlmRelWISOne{} at one week, \HgbRelWISFour{} vs \GlmRelWISFour{} at four), but its 80\% intervals over-cover
+Pooled over all districts and diseases, the gradient-boosting model is more accurate at every horizon (relative WIS
+\HgbRelWISOne{} vs \GlmRelWISOne{} at one week, \HgbRelWISFour{} vs \GlmRelWISFour{} at four), though not for every
+disease (for malaria the GLM is better, Section~\ref{sec:evfc}); its 80\% intervals over-cover
 (\HgbCovOne{}), i.e.\ they are wider than needed, and it gives no per-district explanation. We keep the per-district
 GLM, whose coefficients (lagged rain, temperature, last season) officials can read and challenge and whose intervals
 are calibrated (\GlmCovOne{}), as the operational model, and run the boosted model as a monitored challenger whose
@@ -260,7 +261,7 @@ Table format & Delta Lake & plain Parquet (no MERGE/time travel); Iceberg (heavi
 Storage & local FS / MinIO & HDFS in Docker (more RAM on a laptop)\\
 Orchestration & Makefile + DAG runner & Airflow/Prefect (services and memory for a 6-task DAG)\\
 Detection & CUSUM on historical limits & Farrington flexible (needs years of clean baseline per series; slower)\\
-Forecast & per-district NB GLM & pooled HGB (more accurate, opaque, over-wide intervals: challenger); ARIMA (no count noise, weather lags awkward)\\
+Forecast & per-district NB GLM & pooled HGB (more accurate overall, opaque, over-wide intervals: challenger); ARIMA (no count noise, weather lags awkward)\\
 Optimiser & SciPy HiGHS MILP & PuLP/CBC (extra binary); heuristics (no optimality guarantee)\\
 Serving & stdlib server + static JSON & database-backed API (not needed for $<$10\,MB of aggregates)\\\bottomrule
 \end{tabular}\end{table}
@@ -490,9 +491,12 @@ districts and diseases, the GLM's one-week-ahead MAE is \GlmMAEOne{} vs \BaseMAE
 and \HgbMAEOne{} for pooled boosting; its WIS is \GlmRelWISOne{} of the baseline's at one week and
 \GlmRelWISFour{} at four weeks, and 80\% intervals cover \GlmCovOne{} (h\,=\,1) and \GlmCovFour{} (h\,=\,4) of
 outcomes, close to the nominal 80\% (seasonal naive: \BaseCovOne{}). Skill decays with horizon as expected;
-the largest gains are for ILI and dengue, whose weather-driven and multi-year patterns the naive method cannot
-follow. The pooled boosted model is more accurate at all horizons (relative WIS \HgbRelWISOne{} at $h=1$,
-\HgbRelWISFour{} at $h=4$), because it shares information across districts, but its intervals over-cover
+the largest one-week gains are for ILI and dengue, whose weather-driven and multi-year patterns the naive method
+cannot follow, but four weeks ahead the ILI GLM is no better than the naive method. Pooled over all districts and
+diseases, the boosted model is more accurate at all horizons (relative WIS
+\HgbRelWISOne{} at $h=1$, \HgbRelWISFour{} at $h=4$), because it shares information across districts, but not for
+every disease: for malaria the GLM has the lower WIS at all four horizons ($h=1$ and $h=4$ in
+Table~\ref{tab:fc}), and for dengue one week ahead the two are level. Its intervals also over-cover
 (\HgbCovOne{} at $h=1$) and it cannot be explained district by district; we keep the GLM for decisions (C5) and
 log the challenger, whose accuracy advantage is the main argument for a hierarchical model in future work.
 
@@ -548,7 +552,7 @@ SF & Rows & Gen. & Bronze & Silver & Gold & Analyt. & Export & Total & Landing &
 Two optimisations with before/after evidence (median of three runs on the SF\,=\,1 lake, Spark UI screenshots in
 \texttt{docs/experiments/screenshots}): (i) \textbf{broadcast join of the facility registry} -- with broadcasting
 disabled Spark plans a SortMergeJoin that shuffles every bronze encounter (Fig.~\ref{fig:sparkui}: 28.9\,M rows,
-660\,MB of shuffle data, the lake then also held the rehearsal drops) and sorts both
+660\,MiB of row data, written as 24\,MiB of compressed shuffle files; the lake then also held the rehearsal drops) and sorts both
 sides; broadcasting the \GenFacilities{}-row registry gives a BroadcastHashJoin with no shuffle of the large side:
 \OptBcastBefore{}\,s $\rightarrow$ \OptBcastAfter{}\,s (\OptBcastSpeedup{}$\times$); (ii) \textbf{columnar storage} --
 the same per-facility, per-diagnosis count over all encounters reads \OptColCsvGB{}\,GB of CSV in the landing zone
@@ -580,7 +584,9 @@ skipped the day already loaded and ingested the other \RehDays{} days (\RehRows{
 in \RehMin{} minutes end to end, regenerating alerts, forecasts, allocation and dashboard data without any code
 change. \textbf{Streaming (\req{ING-6}).} With the Structured Streaming job running (30-second trigger), a new
 encounter file dropped in the inbox refreshed \texttt{alerts.json} after a median of \StreamLatencyMed{}\,s
-(maximum \StreamLatencyMax{}\,s), inside the 5-minute requirement. \textbf{Time travel (\req{ING-7}).} Every
+(maximum \StreamLatencyMax{}\,s), inside the 5-minute requirement. These three measurements were taken
+during the earlier build, whose population and weather inputs were still synthetic stand-ins, and were not
+repeated on the final real-data lake. \textbf{Time travel (\req{ING-7}).} Every
 load creates a new Delta version of silver and gold, so ``what did we know on day $t$'' is a
 \texttt{versionAsOf} read (\texttt{make inspect WHAT=asof}). Reading \texttt{gold.weekly\_counts} at the version
 before the rehearsal drop shows the counts known on \TTKnownUntil{}; the drop's late reports revised

@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import json
+import math
 import shutil
 from pathlib import Path
 
@@ -31,6 +32,11 @@ def _fmt(v, nd=1):
 
 def _pct(v, nd=0):
     return "--" if v is None or pd.isna(v) else f"{100 * v:.{nd}f}\\%"
+
+
+def _dmy(v):
+    t = pd.Timestamp(v)
+    return f"{t.day} {t:%b %Y}"   # "%-d" is glibc-only and fails on Windows
 
 
 def main() -> None:
@@ -73,10 +79,9 @@ def main() -> None:
     for meth, key in (("ears_c1", "EarsCOne"), ("ears_c2", "EarsCTwo"), ("ears_c3", "EarsCThree"), ("cusum", "Cusum")):
         low = g[(g.method == meth) & (g.false_alerts_per_district_year <= 4.0)]
         m[f"{key}SensLowFA"] = _pct(low.sensitivity_local.max()) if len(low) else "--"
-    hi = g[(g.method == "cusum") & g.false_alerts_per_district_year.between(10, 20)]
-    m["CusumDelayHighFA"] = (f"{int(hi.median_delay_local.min())}--{int(hi.median_delay_local.max())}"
-                             if len(hi) and hi.median_delay_local.min() != hi.median_delay_local.max()
-                             else (_fmt(hi.median_delay_local.iloc[0], 0) if len(hi) else "--"))
+    d = g[(g.method == "cusum") & g.false_alerts_per_district_year.between(10, 20)].median_delay_local.dropna()
+    m["CusumDelayHighFA"] = ((f"{_fmt(d.min())}--{_fmt(d.max())}" if d.min() != d.max() else _fmt(d.iloc[0]))
+                             if len(d) else "--")
     lines = []
     for _, r in g.iterrows():
         mark = r"\textbf{*}" if (r.method == op["method"] and r.threshold == op["threshold"]) else ""
@@ -155,7 +160,8 @@ def main() -> None:
     (GEN / "seir_table.tex").write_text("\n".join(lines) + "\n")
 
     dd = json.loads((out / "dedup_eval.json").read_text())
-    m.update(DedupPrecision=_pct(dd["precision_all_links"], 2), DedupRecall=_pct(dd["recall"], 1),
+    # round down: a precision below 1 must never print as 100%
+    m.update(DedupPrecision=_pct(math.floor(dd["precision_all_links"] * 1e5) / 1e5, 3), DedupRecall=_pct(dd["recall"], 1),
              DedupTrue=_fmt(dd["true_duplicate_pairs"], 0), DedupWrongMerge=str(dd["distinct_episodes_wrongly_merged"]))
     ka = json.loads((out / "kanonymity.json").read_text())
     lines = [f"{r['level']} & {_fmt(r['records'], 0)} & {r['classes'] if r['classes'] is not None else '--'} & "
@@ -225,7 +231,7 @@ def main() -> None:
     tt = DOCS / "experiments" / "time_travel.json"
     if tt.exists():
         tj = json.loads(tt.read_text())
-        m.update(TTKnownUntil=pd.Timestamp(tj["known_until_then"]).strftime("%-d %b %Y"), TTRevisedWeeks=str(tj["revised_weeks"]),
+        m.update(TTKnownUntil=_dmy(tj["known_until_then"]), TTRevisedWeeks=str(tj["revised_weeks"]),
                  TTRows=str(len(tj["rows"])), TTTriangleDiff=_fmt(abs(tj["triangle_minus_time_travel"]["total"]), 0),
                  TTKnownThen=_fmt(tj["triangle_minus_time_travel"]["known_then_total"], 0))
     lat = DOCS / "experiments" / "stream_latency.jsonl"
@@ -244,7 +250,7 @@ def main() -> None:
         start, end = s3["range"]
         gs = sorted((Path(path("reference")) / "gsod").rglob("*.csv.gz"))
         wx = gsod_to_districts(read_gsod([(f.name, f.read_bytes()) for f in gs]), districts(), start, end)
-        m.update(WxStations=str(s3["stations"]), WxObservedUntil=pd.Timestamp(s3["observed_until"]).strftime("%-d %b %Y"),
+        m.update(WxStations=str(s3["stations"]), WxObservedUntil=_dmy(s3["observed_until"]),
                  WxFillPct=_fmt(100 * (wx["source_status"] == "climatology_fill").mean(), 0))
     hrsl = Path(path("reference")) / "population_hrsl_adm2.csv"
     if hrsl.exists():
