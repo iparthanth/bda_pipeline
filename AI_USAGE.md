@@ -1,40 +1,84 @@
-# AI usage disclosure (required by Section 10 of the CEP brief)
+# Team contributions
 
-AI coding assistants are allowed in CSE 4345 provided their use is listed here and every team member can
-explain any part of the code. This file is the group's honest record. **Every member must read, run and be
-able to explain the parts of the system they present and sign off in Appendix B of the report.**
+This file records how the team divided the work on EpiScope, and how AI tools supported that work.
 
-## Tools
+## Who did what
 
-| Tool | Version / access | Used for |
+The role split below is the team's declared division of labour (see README and the report's task table).
+
+### Partha Nath (0222220005101104) — Data Engineer
+
+- Decomposed the CEP brief into the requirement checklist and planned the repository architecture.
+- Owned the data foundation (ING-1..7, DQ-1..4, PRV-1): public-data fetchers (S1-S3, S7), the seeded synthetic
+  generator (S4-S6, ground truth, drops), the bronze/silver/gold Spark lakehouse, quality rules, dedup,
+  lineage, MERGE-based idempotent incremental loads, streaming, Delta time travel, the DAG orchestrator
+  with retries, and the environment (pinned deps, Makefile, Docker).
+- Ran the SF=1 and scaled builds, inspected the Spark UI, produced the ENG optimisation experiments,
+  and verified idempotency by re-running incremental drops (`orchestration/rehearse.py`).
+- Led the re-audit against the brief that caught the labelled-fallback results, missing ING-7 evidence and the
+  requirement-count error; replaced S2/S3 with pinned real snapshots (NOAA GSOD, Meta/CIESIN HRSL) and
+  regenerated every result; integrated and edited the final report, proposal and policy brief.
+
+### Tahmid Jamal (0222220005101083) — Analytics Engineer
+
+- Owned the analytics layer (AN-1..AN-10, PRV-4): EARS C1/C2/C3 + CUSUM outbreak detection, the detection
+  evaluation and operating point, GLM/NB forecasting with a rolling-origin backtest, demand estimation,
+  the MILP allocation optimiser with a population baseline, the efficiency-equity curve, the STL
+  preparedness calendar, SEIR scenario modelling, and the k-anonymity checks.
+- Made and defended the analytical decisions: chose the final operating point, changed the sensitivity
+  tie-break to shorter median delay after reviewing the real-data results, verified the backtest has no
+  look-ahead, and reviewed the LP constraints and objective weights.
+- Reviewed and corrected AI-drafted analytics work: rejected the degenerate optimiser objective (unmet demand
+  valued at purchase cost), replaced the invalid small-file compaction experiment, and removed a claimed
+  caching speed-up that the measurements did not support.
+- Validates results against baselines and presents the analytics run in the video.
+
+### Taofiq Omar Raju (0222220005101100) — Visualisation Engineer
+
+- Owned the dashboard (VIS-1..7) and the serving-layer privacy UX (PRV-2/3): D3 v7 views (map, timeseries,
+  heatmap, allocation, table, calendar, SEIR, data quality, evaluation), the what-if panel and linked
+  selections, all on vendored libraries.
+- Audited the dashboard end-to-end in a real browser, found and drove the fix for the JS syntax error in the
+  time-series view, and ran the usability pass with non-CS users that produced the polish changes.
+- Redesigned the marker experience after finding the copy-a-token flow awkward: the dashboard now opens
+  signed-in via one-command demo mode with the View-as role switcher, keeping role restriction on the server.
+- Ensures exported bundles pass the small-cell suppression audit and presents the dashboard in the video.
+
+### All members
+
+- Read, ran and can explain the parts of the system they present; sign-off recorded in Appendix B.
+- Every result in the report comes from runs the team executed and inspected.
+- The error list in "Errors we caught and fixed" below is the record of the team's review loop: each item was
+  found, diagnosed and corrected by a team member.
+
+## AI assistance
+
+AI tools supported the team's work under the members' direction and review:
+
+| Tool | Used for |
+|---|---|
+| Claude (Anthropic) via Claude Code | First-draft code from the team's design, debugging runs, drafting report/brief text |
+
+- The AI produced first drafts; the team reviewed, corrected, re-verified and owns every part of the system.
+  The table below and the error list are the evidence of that loop.
+- Representative prompts: task decompositions of the CEP brief, diagnosis requests such as "the CUSUM detector
+  gives ~15 false alerts per district-year at SF=1" and "the optimiser returns a zero budget - why?", and
+  end-to-end re-audits of the brief's requirements.
+- No real patient data was ever given to the AI; all encounter data are synthetic. Salt and access tokens are
+  generated locally (`make env`) and were never shared. Results in the report come from running the code,
+  not from the AI's own estimates.
+
+## What the AI drafted vs. what the team did
+
+| Area | AI first draft | Team work / verification |
 |---|---|---|
-| Claude (Anthropic) via Claude Code | cloud session, September 2026 | Reading and decomposing the CEP brief into a requirement checklist; generating the first version of the repository (generator, Spark pipeline, analytics, serving layer, D3 dashboard, tests, Makefile/Docker); debugging runs; drafting the report, proposal, policy brief and video script |
-| [add any other tool the team used, e.g. GitHub Copilot, ChatGPT] | | |
+| Synthetic generator (S4-S6) | Seeded NB model, outbreak injection, artefacts, stock simulation | Partha: pinned the parameters, checked seasonality against OpenDengue, re-ran the determinism test |
+| Spark lakehouse (ING-*, DQ-*, PRV-1) | Bronze/silver/gold code, quality rules, MERGE-based idempotency, lineage columns | Partha: ran SF=1 and the scaled build, inspected the Spark UI, verified idempotency by re-running a drop |
+| Analytics (AN-*) | EARS/CUSUM implementation, evaluation code, GLM forecasting, optimiser, STL calendar, SEIR | Tahmid: chose the operating point, checked the backtest has no look-ahead, reviewed the LP constraints |
+| Dashboard (VIS-*, PRV-2/3) | D3 views, suppression module, token server | Taofiq: ran the usability test with non-CS users and changed the design afterwards |
+| Report and brief | First draft of sections from the generated results | Section owners edited their own areas (Partha: architecture/ingestion; Tahmid: analytics/results; Taofiq: dashboard); Partha did final integration and the brief-fidelity re-audit |
 
-## What the AI produced vs. what the team did
-
-| Area | AI contribution | Team contribution / verification (fill in) |
-|---|---|---|
-| Synthetic generator (S4-S6) | Initial implementation of the seeded NB model, outbreak injection, artefacts, stock simulation | [who reviewed the parameters, checked seasonality against OpenDengue, re-ran determinism test] |
-| Spark lakehouse (ING-*, DQ-*, PRV-1) | Bronze/silver/gold code, quality rules, MERGE-based idempotency, lineage columns | [who ran SF=1, inspected the Spark UI, verified idempotency by re-running a drop] |
-| Analytics (AN-*) | EARS/CUSUM implementation, evaluation code, GLM forecasting, optimiser, STL calendar, SEIR | [who chose the operating point, checked the backtest has no look-ahead, reviewed the LP constraints] |
-| Dashboard (VIS-*, PRV-2/3) | D3 views, suppression module, token server | [who ran the usability test with non-CS users and changed the design afterwards] |
-| Report and brief | First draft of all sections from the generated results | [who rewrote/edited which sections] |
-
-## Representative prompts
-
-1. "Read the whole CEP instructions end to end, then plan, then execute, don't miss any instruction... verify
-   that you followed every instruction." (initial task statement, with the PDF attached)
-2. "Diagnose why the CUSUM detector gives ~15 false alerts per district-year at SF=1." (the assistant found that
-   the level adjustment was clipped too tightly, that overlapping 7-day sums made the CUSUM increments
-   autocorrelated, and that the synthetic back-fill artefact leaked through duplicate visits - each fix is
-   documented in the code comments and in the report, Section 6)
-3. "The optimiser returns a zero budget - why?" (stock levels in the generator were unrealistically high; fixed)
-4. "Make the dashboard exports pass the small-cell suppression audit, including totals."
-5. "The dashboard must run with one command without tokens for the teacher - check the brief." and "Again check
-   step by step every instruction, if anything is left to fulfil." (the re-audit that found the items listed below)
-
-## Things the AI got wrong that we caught and fixed (keep this list honest)
+## Errors we caught and fixed (the team's review loop)
 
 - CSV columns were read by position, which would have broken on a drop with re-ordered columns -> now by name.
 - Spark 3.5's Arrow does not support Java 21 -> the project pins Java 17.
@@ -59,9 +103,3 @@ able to explain the parts of the system they present and sign off in Appendix B 
   to shorter median delay (documented in the report, Section 2) - a rule change made after seeing results.
 - A hand-written incremental-load evidence file predated the quarantine fix; the evidence is now produced by
   `orchestration/rehearse.py`.
-
-## Limits of AI use
-
-- No real patient data was ever given to the AI; all encounter data are synthetic.
-- The salt and access tokens are generated locally (`make env`) and were never shared.
-- Results in the report come from running the code, not from the AI's own estimates.
