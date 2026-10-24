@@ -4,7 +4,7 @@
 hosted on YouTube (Unlisted) or Drive/OneDrive with "anyone with the link can view" (test in a private
 window, signed out) · **every member presents their lead area for at least 4 minutes, with their own voice and
 name on screen** (camera recommended) · required chapters below, timestamps in the video description *and*
-in README section 7 · long jobs may be sped up but terminal timestamps must stay visible · no edits that hide
+in README section 11 · long jobs may be sped up but terminal timestamps must stay visible · no edits that hide
 failures · everything shown must match the tagged `v1.0` code.
 
 ## Before recording
