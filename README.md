@@ -1,10 +1,10 @@
 # EpiScope - Big Data Surveillance, Forecasting and Response Planning
 
-**Video presentation:** [VIDEO LINK - YouTube (Unlisted) or Drive/OneDrive "anyone with the link"; chapter timestamps below]\
+**Video presentation:** [EpiScope video on Google Drive](https://drive.google.com/file/d/1PEtChZKgoXLoCZ7s8C676Bnu7UaYOCw3/view?usp=sharing) (19:07, 1080p, captions; chapter timestamps in [section 11](#11-video-chapters))\
 **Report (PDF):** [`docs/EpiScope_report.pdf`](docs/EpiScope_report.pdf) (policy brief = Appendix A, contribution matrix = Appendix B, reflections = Appendix C) · **Proposal (M1):** [`docs/proposal.md`](docs/proposal.md) · **Risk log (M2):** [`docs/risk_log.md`](docs/risk_log.md) · **AI usage:** [`AI_USAGE.md`](AI_USAGE.md) · **Usability protocol:** [`docs/usability/`](docs/usability/)
 
 CSE 4345 Big Data Analytics - Complex Engineering Problem, Premier University Chittagong, Spring 2026.\
-Group [GROUP NUMBER]: Partha Nath (0222220005101104, Data Engineer) · Tahmid Jamal (0222220005101083, Analytics Engineer) · Taofiq Omar Raju (0222220005101100, Visualisation Engineer)
+Group Modulus: Partha Nath (0222220005101104, Data Engineer) · Tahmid Jamal (0222220005101083, Analytics Engineer) · Taofiq Omar Raju (0222220005101100, Visualisation Engineer)
 
 > **All encounter, facility and stock data are synthetic** (a teaching case, not real patients). Public data:
 > district boundaries from OCHA COD-AB (HDX), OpenDengue V1.3, NOAA GSOD station weather and Meta/CIESIN HRSL
@@ -324,16 +324,19 @@ data/reference/  small real reference files (districts, upazilas, OpenDengue, NO
                  population) - everything else in data/ is generated
 ```
 
-## 11. Video chapters (timestamps to be filled in after recording)
+## 11. Video chapters
+
+Length 19:07, 1920×1080, with captions. Paste the same list into the video description.
 
 | Time | Chapter | Presenter |
 |---|---|---|
-| 00:00 | 1. Problem, stakeholders and conflicts C1-C5 | Partha Nath (Data Engineer) |
-| [mm:ss] | 2. Architecture walkthrough | Partha Nath (Data Engineer) |
-| [mm:ss] | 3. Recorded pipeline run: clean run, one incremental day, idempotent re-run, quarantine example | Partha Nath (Data Engineer) |
-| [mm:ss] | 4. Analytics results against baselines | Tahmid Jamal (Analytics Engineer) |
-| [mm:ss] | 5. Dashboard walkthrough: linked views and what-if panel | Taofiq Omar Raju (Visualisation Engineer) |
-| [mm:ss] | 6. Recommendations, ethics and limitations | [MEMBER] |
+| 00:00 | Title | |
+| 00:04 | 1. Problem, stakeholders and conflicts C1-C5 | Partha Nath (Data Engineer) |
+| 02:39 | 2. Architecture walkthrough | Partha Nath (Data Engineer) |
+| 05:05 | 3. Recorded pipeline run: clean run, one incremental day, idempotent re-run, quarantined rows | Partha Nath (Data Engineer) |
+| 06:16 | 4. Analytics results against baselines | Tahmid Jamal (Analytics Engineer) |
+| 12:49 | 5. Dashboard walkthrough: linked views, roles and the what-if panel | Taofiq Omar Raju (Visualisation Engineer) |
+| 17:27 | 6. Recommendations, ethics and limitations | Taofiq Omar Raju (Visualisation Engineer) |
 
 Recording plan and script: [`docs/video/video_script.md`](docs/video/video_script.md).
 

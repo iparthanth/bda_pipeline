@@ -77,6 +77,7 @@ AI tools supported the team's work under the members' direction and review:
 | Analytics (AN-*) | EARS/CUSUM implementation, evaluation code, GLM forecasting, optimiser, STL calendar, SEIR | Tahmid: chose the operating point, checked the backtest has no look-ahead, reviewed the LP constraints |
 | Dashboard (VIS-*, PRV-2/3) | D3 views, suppression module, token server | Taofiq: ran the usability test with non-CS users and changed the design afterwards |
 | Report and brief | First draft of sections from the generated results | Section owners edited their own areas (Partha: architecture/ingestion; Tahmid: analytics/results; Taofiq: dashboard); Partha did final integration and the brief-fidelity re-audit |
+| Video and Appendix C | Voice-over script timed to the screen recordings; first drafts of the three reflections from the project record; video editing (cuts, captions, noise reduction) | Each member recorded the script in their own voice and is responsible for checking their own reflection |
 
 ## Errors we caught and fixed (the team's review loop)
 

@@ -1,18 +1,51 @@
-% Appendix C - individual reflections (each member writes their own, about half a page)
+% Appendix C - individual reflections (about half a page each)
 \section{Individual Reflections}
-\noindent\textcolor{red}{Each member writes their own half-page reflection in their own words (it is graded
-individually under R9 and must not be generated). Suggested prompts: what you led and what you contributed
-outside your role; the hardest technical problem you solved and how you know the solution is right; one design
-decision you would change and why; what you learned about teamwork and about communicating with non-technical
-users; how you used AI tools and what you had to verify or correct yourself.}
 
 \subsection*{Partha Nath (0222220005101104) -- Data Engineer}
-\todo{Reflection (about 250 words).}
-\vspace{4cm}
+I led the data platform: the synthetic generator, the bronze, silver and gold layers on Delta Lake, the 27
+data-quality rules with quarantine, pseudonymisation, and the DAG that runs everything with one command. I also
+integrated the report and produced the video. The hardest problem was making every load idempotent. A file can
+arrive twice, a record can be resubmitted, and a late report can change an old week. A SHA-256 manifest in bronze
+and a Delta MERGE on the encounter ID in silver solve this, and the recorded run shows it: loading the same day again
+returned ``nothing new'', and at full scale the number of silver rows equalled the number of distinct encounter IDs
+(27,656,066). One decision I would revisit is the partitioning. Year and division keep the folder count small (48
+instead of 384), but every daily drop touches all eight divisions of the current year, so I would measure a layout by
+load date with periodic compaction before the next version. Recording the run also taught me to check the
+environment first: my first attempt failed because Docker Desktop was not running, and the scale factor has to be set
+again in every new terminal. Writing each conflict as a number, for example at most three false alerts per district
+and year, gave the team a concrete target to test against instead of a matter of opinion. We used Claude through
+Claude Code for first-draft code and text, as AI\_USAGE.md records; I ran the pipeline myself and am responsible for
+explaining every part of my area.
 
 \subsection*{Tahmid Jamal (0222220005101083) -- Analytics Engineer}
-\todo{Reflection (about 250 words).}
-\vspace{4cm}
+I led the analytics: outbreak detection, forecasting, demand conversion, the allocation optimiser, the preparedness
+calendar and the SEIR scenarios, all reading only the gold tables. The hardest problem was choosing a detector
+honestly. Early designs raised far too many false alerts, and the planted reporting artefacts, a facility that goes
+silent and then back-fills weeks of reports, and a facility that starts reporting mid-way, produced alerts a district
+officer would chase for nothing. Guarding the signal against those artefacts and applying a fixed rule, the highest
+sensitivity with at most three false alerts per district-year, gave CUSUM at threshold 17: 87.5\% of local
+outbreaks, a median delay of nine days and 2.97 false alerts, against 34--66\% for the EARS baselines at a similar
+false-alarm level. The evaluation uses the injected ground truth, which the detector never reads, so the numbers
+are not tuned to the answer. One thing I would change is the tie-break by shorter delay: it was added after seeing the
+results, which we state openly, and next time I would fix it in advance. The forecasts also show their limits. One
+week ahead the GLM nearly halves the seasonal-naive error (36.3 against 64.7 cases), but for influenza-like illness
+four weeks ahead it does worse than last year, so a hierarchical model is the obvious next step. For non-experts,
+the equity floor was easiest to explain as one trade-off: $\alpha=0.1$ costs 9.8\% more unmet need but leaves no
+district with nothing. Claude drafted much of the first code, as AI\_USAGE.md records; I am responsible for
+understanding and explaining every result in Chapter~4 of the video and in the results section of this report.
 
 \subsection*{Taofiq Omar Raju (0222220005101100) -- Visualisation Engineer}
-\todo{Reflection (about 250 words).}
+I led the serving layer and the D3.js dashboard: the linked views, the what-if panel, role-based bundles, small-cell
+suppression and the audit log. The hardest problem was privacy in every output, not only on the map. Hiding counts
+from one to four is easy; the difficulty is that a hidden cell can be recovered by subtracting the visible cells from
+a district, division or national total. Complementary suppression hides a second cell in those cases, and automated
+tests scan every export for counts from one to four and re-check the published totals, which is how we know the rule
+holds. Speed was the second problem. Instead of solving the optimiser in the browser, all 288 slider combinations are
+solved beforehand, so the what-if panel responds instantly. One decision I would change is the ``View as'' switch:
+it is useful for marking and the video, but it exists only in demo mode, and a real deployment should give each
+officer their own token. Some behaviour also looks like a bug to a first-time user, such as a heatmap click narrowing
+the time series to a single week, and it needs a clearer cue. The usability test with non-CS users is still to be
+run, and its results will decide what we change first. Designing for district officers taught me that every status
+needs an icon and a label, not only a colour, and that every panel must say how fresh its data are. Claude produced
+first-draft code, as AI\_USAGE.md records; I am responsible for understanding and explaining every part of the serving
+layer and the dashboard.
